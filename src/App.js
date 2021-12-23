@@ -5,7 +5,8 @@ import Board from './Board';
 
 function App() {
   return (
-    <div>
+    <div class="App">
+      <span>Donate to my <a href="https://ko-fi.com/maonekochat">Ko-fi page!</a></span>
       <Board 
       />
     </div>
