@@ -1,0 +1,42 @@
+.button {
+    background: cyan;
+    border: 1px solid #999;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 10px;
+    height: 100px;
+    width: 100px;
+    border-radius: 10%;
+    padding: 0;
+    text-align: center;
+    border: 5px solid white;
+  }
+
+.one {
+  background: red;
+}
+
+.two {
+  background: yellow;
+}
+
+.goalOne {
+  border: 5px solid red;
+}
+
+.goalTwo {
+  border: 5px solid yellow;
+}
+
+.fallen {
+  background: blue;
+}
+
+.legal {
+  border: 5px solid lightblue;
+
+}
+
+.ret, .button:hover {
+  border: 5px solid;
+}
