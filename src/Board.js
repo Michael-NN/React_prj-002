@@ -390,7 +390,7 @@ class Board extends React.Component {
         let headerText;
         if (this.state.gameOngoing) {
             if (this.state.playerOneTurn) {
-                headerText = 'Red\'s Turn pointless update test';
+                headerText = 'Red\'s Turn';
             } else {
                 headerText = 'Yellow\'s Turn';
             }
