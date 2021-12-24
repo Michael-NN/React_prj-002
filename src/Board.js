@@ -1,6 +1,7 @@
 import React from 'react';
 import Square from './Square';
 import Settings from './Settings';
+import './Board.css';
 
 class Board extends React.Component {
     constructor(props) {
@@ -66,6 +67,8 @@ class Board extends React.Component {
 		return (
 			<Square
                 squid = {squid}
+                rowCount = {this.state.rowCount}
+                colCount = {this.state.colCount}
                 row = {rowNumber}
                 col = {colNumber}
                 ret = {retFlag}
@@ -79,7 +82,24 @@ class Board extends React.Component {
     }
 
     renderRow(rowNumber, length) {
-        return <div className='row'>{Array(length).fill(null).map((element, index) => this.renderSquare(rowNumber, index))}</div>;
+        let className = 'row'
+        switch(this.state.rowCount) {
+            case 3:
+                className += ' rows-3'
+                break;
+            case 5:
+                className += ' rows-5'
+                break;
+            case 7:
+                className += ' rows-7'
+                break;
+            case 9:
+                className += ' rows-9'
+                break;
+            default:
+                className += ''
+        }
+            return <div className={className}>{Array(length).fill(null).map((element, index) => this.renderSquare(rowNumber, index))}</div>;
     }
 
     renderBoard(rows, cols) {

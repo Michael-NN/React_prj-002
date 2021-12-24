@@ -1,6 +1,28 @@
 .board {
-    background: tan;
-    border: 1px solid #999;
-    height: 1px;
-    width: 1px;
+    height: 500px;
+    max-height: 100%;
+    width: 500px;
+    max-width: 100%;
+    margin: auto;
+}
+
+.row {
+    height: 100px;
+    width: 100%;
+}
+
+.rows-3 {
+    max-height: 33.33%;
+}
+
+.rows-5 {
+    max-height: 20%;
+}
+
+.rows-7 {
+    max-height: 14.28%;
+}
+
+.rows-9 {
+    max-height: 11.11%;
 }

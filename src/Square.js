@@ -2,6 +2,22 @@ import './Square.css';
 
 function Square (props) {
     let className = 'button';
+    switch(props.colCount) {
+        case 3:
+            className += ' cols-3'
+            break;
+        case 5:
+            className += ' cols-5'
+            break;
+        case 7:
+            className += ' cols-7'
+            break;
+        case 9:
+            className += ' cols-9'
+            break;
+        default:
+            className += ''
+    }
     let tabIndex = -1;
     if (props.ret) {
         className += ' ret';
