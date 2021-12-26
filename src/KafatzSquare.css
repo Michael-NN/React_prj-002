@@ -1,0 +1,9 @@
+.kafatzButton {
+    height: 100px;
+    width: 100px;
+    background-color: cyan;
+}
+
+.kafatzBoard {
+    margin: 100px;
+}

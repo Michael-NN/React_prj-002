@@ -1,6 +1,19 @@
 .App {
   text-align: center;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+header {
+  color: #E7DFDD;
+  background-color: #0E0B16;
+  vertical-align: middle;
+  height: 75px;
+}
+
+.logo {
+  float: left;
+  height: 75px;
+  width: 75px;
 }
 
 /*

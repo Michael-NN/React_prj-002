@@ -252,9 +252,20 @@ class Board extends React.Component {
                     moves[i] = this.minMaxBestMove(mutSquares, mutRow, mutCol, steps-1, best==='max'?'min':'max')
                 }
             }
+            const valueList = moves.map(element => element?element.value:null);
+            const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
+            let bestMoves = [];
+            valueList.forEach((element, index) => {
+                if (element === bestValue) {
+                    bestMoves.push(index);
+                }
+            })
+            const bestMove = bestMoves[Math.floor(Math.random()*bestMoves.length)];
+            /*
             let valueList = moves.map(element => element?element.value:null).filter(element => element!==null);
             let bestValue = best==='max'?Math.max(...valueList):Math.min(...valueList);
             let bestMove = moves.findIndex(element => element!==null && element.value===bestValue);
+            */
             return {move: bestMove, value: bestValue};
         }
     }
