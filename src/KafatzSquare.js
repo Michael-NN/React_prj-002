@@ -1,8 +1,39 @@
 import './KafatzSquare.css';
 
 function KafatzSquare(props) {
+    let buttonClass = 'kafatzButton'
+    let gamePieceClass = null;
+    if (props.legal) {
+        buttonClass += " selected";
+    }
+    if (props.ret) {
+        buttonClass += ' kafatzRet';
+    }
+    if (props.value===1) {
+        gamePieceClass = "gamePiece playerOnePiece"
+    }
+    if (props.value===2) {
+        gamePieceClass = "gamePiece playerTwoPiece"
+    }
+    if (props.selected) {
+        gamePieceClass += " selected"
+    }
+    let tabIndex = -1;
+    if (props.cpp || props.legal) {
+        tabIndex = 0;
+    }
     return (
-        <button className="kafatzButton" onClick={() => console.log('how you tday?')}></button>
+        <div className="kafatzSquare">
+            <button id={props.squid}
+                    className={buttonClass}
+                    tabIndex={tabIndex}
+                    onClick={props.onClick}
+                    onFocus={props.onFocus}
+                    >
+                <div className={gamePieceClass}>
+                </div>
+            </button>
+        </div>
     )
 }
 

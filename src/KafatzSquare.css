@@ -1,9 +1,36 @@
-.kafatzButton {
-    height: 100px;
-    width: 100px;
-    background-color: cyan;
+.kafatzSquare {
+    display: inline-block;
+    box-sizing: border-box;
 }
 
-.kafatzBoard {
-    margin: 100px;
+.kafatzButton {
+    background-color: black;
+    border: 5px solid #E7DFDD;
+    height: 100px;
+    width: 100px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.gamePiece {
+    height: 90%;
+    width: 90%;
+    border-radius: 100%;
+    box-sizing: border-box;
+}
+
+.playerOnePiece {
+    background-color: red;
+}
+
+.playerTwoPiece {
+    background-color: white;
+}
+
+.selected {
+    border: 5px solid cyan;
+}
+
+.kafatzRet {
+    border: 5px solid cyan;
 }

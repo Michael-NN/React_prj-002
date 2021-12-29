@@ -107,9 +107,6 @@ class Board extends React.Component {
     }
 
     handleKeyUp(event) {
-        if (event.code==='KeyG') {
-            console.log(this.state);
-        }
         const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
         let retRow = this.state.retRow;
         let retCol = this.state.retCol;
@@ -128,10 +125,7 @@ class Board extends React.Component {
                 break;
             case 'Space':
                 if (this.state.gameOngoing) {
-                    const valid = this.validateMove(retRow, retCol);
-                    if (valid) {
-                        this.setCurrent(retRow, retCol);
-                    }
+                    this.handleClick(retRow, retCol);
                 } else {
                     this.resetGame(null, null, null, null);
                 }
