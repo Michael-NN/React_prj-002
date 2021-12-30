@@ -1,22 +1,20 @@
 .kafatzSquare {
     display: inline-block;
-    box-sizing: border-box;
+    height: 100%;
+    width: 16.66%
 }
 
 .kafatzButton {
     background-color: black;
-    border: 5px solid #E7DFDD;
-    height: 100px;
-    width: 100px;
+    height: 100%;
+    width: 100%;
     text-align: center;
-    box-sizing: border-box;
 }
 
 .gamePiece {
     height: 90%;
     width: 90%;
     border-radius: 100%;
-    box-sizing: border-box;
 }
 
 .playerOnePiece {

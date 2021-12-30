@@ -37,8 +37,31 @@ class KafatzBoard extends React.Component {
     handleClick(row, col) {
         if (this.state.gameOngoing) {
             if ((this.state.playerOneTurn && this.state.squares[row][col] === 1) || (!this.state.playerOneTurn && this.state.squares[row][col] === 2)) {
-                const legalIds = this.legalFor([row, col]);
-                this.setState({selectedPiece: [row, col], legalIds});
+                if (this.state.selectedPiece !== null && this.state.selectedPiece[0]===row && this.state.selectedPiece[1]===col) {
+                        //deselect
+                        this.setState({selectedPiece: null, legalIds: []});
+
+                } else {
+                    //select
+                    const legalIds = this.legalFor([row, col]);
+                    this.setState({selectedPiece: [row, col], legalIds});
+                }
+                /*
+                //I think the refactor above works, but I'm holding on to this for a bit, just in case.
+                if (this.state.selectedPiece === null) {
+                    //select
+                    const legalIds = this.legalFor([row, col]);
+                    this.setState({selectedPiece: [row, col], legalIds});
+                } else {
+                    if (this.state.selectedPiece[0]===row && this.state.selectedPiece[1]===col) {
+                        //deselect
+                        this.setState({selectedPiece: null, legalIds: []});
+                    } else {
+                        //select
+                        const legalIds = this.legalFor([row, col]);
+                        this.setState({selectedPiece: [row, col], legalIds});
+                    }
+                }*/
             } else {
                 if (this.state.selectedPiece !== null) {
                     if (this.state.legalIds.includes(row+','+col)) {
@@ -80,7 +103,7 @@ class KafatzBoard extends React.Component {
                     if (this.state.gameOngoing) {
                         this.handleClick(retRow, retCol);
                     } else {
-//                        this.resetGame(null, null, null, null);
+                        this.resetGame();
                     }
                     break;
                 default:
@@ -139,7 +162,54 @@ class KafatzBoard extends React.Component {
 		const squares = this.state.squares.slice();
         squares[toRow][toCol] = squares[fromRow][fromCol];
         squares[fromRow][fromCol] = 0;
-        this.setState({playerOneTurn, selectedPiece, squares})
+        this.setState({playerOneTurn, selectedPiece, legalIds: [], squares},this.detectEndState);
+    }
+
+    detectEndState() {
+        let oneCount = 0;
+        let twoCount = 0;
+        this.state.squares.forEach(row => {
+            row.forEach(square => {
+                if (square === 1) {
+                    oneCount += 1;
+                }
+                if (square === 2) {
+                    twoCount += 1;
+                }
+            })
+        })
+        if (oneCount === 1) {
+            this.declareEnd(1);
+        }
+        if (twoCount === 1) {
+            this.declareEnd(2);
+        }
+    }
+
+    declareEnd(winner) {
+        if (this.state.gameOngoing) {
+            const gameOngoing = false;
+            this.setState({gameOngoing, winner});
+        }
+    }
+
+    resetGame() {
+        const gameOngoing = true;
+        const playerOneTurn = true;
+        const selectedPiece = null;
+        const legalIds = [];
+        const retRow = null;
+        const retCol = null;
+        const squares = [
+            [2,2,0,0,2,2],
+            [2,2,0,0,2,2],
+            [0,0,0,0,0,0],
+            [0,0,0,0,0,0],
+            [1,1,0,0,1,1],
+            [1,1,0,0,1,1]
+        ]
+
+        this.setState({gameOngoing, playerOneTurn, selectedPiece, legalIds, retRow, retCol, squares});
     }
 
     renderSquare(rowNumber, colNumber) {
@@ -172,8 +242,8 @@ class KafatzBoard extends React.Component {
     render() {
         return (
             <div>
-                <span>This game is under development and it has been deployed because I do what I want and no one is going to see this page right now anyway.</span>
                 {this.renderBoard()}
+                <button onClick={() => this.resetGame()}>Restart</button>
             </div>
         )
     }

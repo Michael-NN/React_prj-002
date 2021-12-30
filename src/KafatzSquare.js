@@ -2,7 +2,7 @@ import './KafatzSquare.css';
 
 function KafatzSquare(props) {
     let buttonClass = 'kafatzButton'
-    let gamePieceClass = null;
+    let gamePieceClass = 'gamePiece';
     if (props.legal) {
         buttonClass += " selected";
     }
@@ -10,10 +10,10 @@ function KafatzSquare(props) {
         buttonClass += ' kafatzRet';
     }
     if (props.value===1) {
-        gamePieceClass = "gamePiece playerOnePiece"
+        gamePieceClass += " playerOnePiece"
     }
     if (props.value===2) {
-        gamePieceClass = "gamePiece playerTwoPiece"
+        gamePieceClass += " playerTwoPiece"
     }
     if (props.selected) {
         gamePieceClass += " selected"
