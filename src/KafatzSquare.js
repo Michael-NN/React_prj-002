@@ -4,7 +4,11 @@ function KafatzSquare(props) {
     let buttonClass = 'kafatzButton'
     let gamePieceClass = 'gamePiece';
     if (props.legal) {
-        buttonClass += " selected";
+        if (props.waitersPiece) {
+            buttonClass += " threatened";
+        } else {
+            buttonClass += " selected";
+        }
     }
     if (props.ret) {
         buttonClass += ' kafatzRet';

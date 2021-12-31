@@ -29,6 +29,10 @@
     border: 5px solid cyan;
 }
 
+.threatened {
+    border: 5px solid red;
+}
+
 .kafatzRet {
     border: 5px solid cyan;
 }

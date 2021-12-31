@@ -6,6 +6,7 @@ class KafatzBoard extends React.Component {
     constructor(props) {
         super(props);
         const gameOngoing = true;
+        const winner = null;
         const playerOneTurn = true;
         const selectedPiece = null;
         const legalIds = [];
@@ -22,6 +23,7 @@ class KafatzBoard extends React.Component {
         
         this.state = {
             gameOngoing,
+            winner,
             playerOneTurn,
             selectedPiece,
             legalIds,
@@ -179,10 +181,10 @@ class KafatzBoard extends React.Component {
             })
         })
         if (oneCount === 1) {
-            this.declareEnd(1);
+            this.declareEnd(2);
         }
         if (twoCount === 1) {
-            this.declareEnd(2);
+            this.declareEnd(1);
         }
     }
 
@@ -195,6 +197,7 @@ class KafatzBoard extends React.Component {
 
     resetGame() {
         const gameOngoing = true;
+        const winner = null;
         const playerOneTurn = true;
         const selectedPiece = null;
         const legalIds = [];
@@ -209,7 +212,7 @@ class KafatzBoard extends React.Component {
             [1,1,0,0,1,1]
         ]
 
-        this.setState({gameOngoing, playerOneTurn, selectedPiece, legalIds, retRow, retCol, squares});
+        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retRow, retCol, squares});
     }
 
     renderSquare(rowNumber, colNumber) {
@@ -221,6 +224,8 @@ class KafatzBoard extends React.Component {
                 row = {rowNumber}
                 col = {colNumber}
                 legal = {this.state.legalIds.includes(squid)}
+                playersPiece = {(this.state.playerOneTurn)?value===1:value===2}
+                waitersPiece = {(this.state.playerOneTurn)?value===2:value===1}
                 ret = {this.state.retRow === rowNumber && this.state.retCol === colNumber}
                 cpp = {(this.state.playerOneTurn && value === 1) || (!this.state.playerOneTurn && value ===2)}
                 value = {value}
@@ -240,10 +245,41 @@ class KafatzBoard extends React.Component {
     }
 
     render() {
+        let headerText;
+        if (this.state.gameOngoing) {
+            if (this.state.playerOneTurn) {
+                headerText = 'Red\'s Turn';
+            } else {
+                headerText = 'White\'s Turn';
+            }
+        } else {
+            if (this.state.winner === 1) {
+                headerText = 'Red Wins!';
+            }
+            if (this.state.winner === 2) {
+                headerText = 'White Wins!';
+            }
+            if (this.state.winner === 0) {
+                headerText = 'It\'s a draw!';
+            }
+        }
         return (
             <div>
+                <h1>{headerText}</h1>
                 {this.renderBoard()}
                 <button onClick={() => this.resetGame()}>Restart</button>
+                <div className="kafatzRulesBox">
+                    <h2>Rules</h2>
+                    <p>
+                        Players take turns moving one of their own color pieces.
+                        A piece can be moved one space horizontally, vertically, or diagonally.
+                        If the piece you are move is adjacent to another piece of your color, you may "jump" it over the neighboring piece, moving it two spaces in that direction.
+                        When a piece is selected, the spaces to which it is able to move will be highlighted.
+                        You may only move one of your pieces into a space occupied by your opponent's piece when moving it by way of a jump.
+                        When this happens, the opponent's piece is removed from play.
+                        The game ends when one player has eliminated all but one of their oppoent's pieces, thereby preventing them from performing jumps.
+                    </p>
+                </div>
             </div>
         )
     }

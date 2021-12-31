@@ -442,6 +442,14 @@ class Board extends React.Component {
                     cpu2={this.state.cpu2}
                     handleSubmit={this.handleSettings}
                 />
+                <div className="rulesBox">
+                    <h2>Rules</h2>
+                    <p>
+                        Players take turns moving the game token one space vertically, horizontally, or diagonally.
+                        Red player's goal is for the game token to enter one of the red corners, while yellow player's goal is for the game token to enter one of the yellow corners.
+                        The game token cannot return to a space it has previously been to.  This is indacted by space color.  Light blue spaces are available, while dark blue spaces are inaccessible.
+                    </p>
+                </div>
             </div>
         );
     }

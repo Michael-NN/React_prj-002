@@ -26,3 +26,10 @@
 .rows-9 {
     max-height: 11.11%;
 }
+
+.rulesBox {
+    width: 500px;
+    max-width: 100vw;
+    margin: auto;
+    padding: 1%;
+}
