@@ -9,6 +9,10 @@
     border-radius: 2%;
 }
 
+.restartButton, .settingsPanel {
+    margin: 1%;
+}
+
 .row {
     height: 100px;
     width: 100%;

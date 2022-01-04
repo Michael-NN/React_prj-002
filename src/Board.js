@@ -254,6 +254,9 @@ class Board extends React.Component {
                     moves[i] = this.minMaxBestMove(mutSquares, mutRow, mutCol, steps-1, best==='max'?'min':'max')
                 }
             }
+            if (moves.every(element => element === null)) {
+                return {value: 0, turns: 0}
+            }
             const valueList = moves.map(element => element?element.value:null);
             const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
 
@@ -445,8 +448,9 @@ class Board extends React.Component {
             <div>
                 <h1>{headerText}</h1>
                 {this.renderBoard(this.state.rowCount,this.state.colCount)}
-                <button onClick={() => this.resetGame(null, null, null, null)}>Restart</button>
+                <button className="restartButton" onClick={() => this.resetGame(null, null, null, null)}>Restart</button>
                 <Settings
+                    className="settingsPanel"
                     boardSize={this.state.boardSize}
                     cpu1={this.state.cpu1}
                     cpu2={this.state.cpu2}
@@ -456,8 +460,12 @@ class Board extends React.Component {
                     <h2>Rules</h2>
                     <p>
                         Players take turns moving the game token one space vertically, horizontally, or diagonally.
+                    </p>
+                    <p>
                         Red player's goal is for the game token to enter one of the red corners, while yellow player's goal is for the game token to enter one of the yellow corners.
-                        The game token cannot return to a space it has previously been to.  This is indacted by space color.  Light blue spaces are available, while dark blue spaces are inaccessible.
+                    </p>
+                    <p>
+                        The game token cannot return to a space it has previously been to.  The vaccated space will vanish after each move.
                     </p>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import './Settings.css';
 
 class Settings extends React.Component {
     constructor(props) {
@@ -37,7 +38,7 @@ class Settings extends React.Component {
     render() {
         return (
             <div>
-                <label>
+                <label className="settingInput">
                     Size:
                     <input
                         type="number"
@@ -48,7 +49,7 @@ class Settings extends React.Component {
                         onChange = {this.handleChangeBoardSize}
                     />
                 </label>
-                <label>
+                <label className="settingInput">
                     Red CPU:
                     <input
                         type="number"
@@ -59,7 +60,7 @@ class Settings extends React.Component {
                         onChange = {this.handleChangeCpu1}
                     />
                 </label>
-                <label>
+                <label className="settingInput">
                     Yellow CPU:
                     <input
                     type="number"

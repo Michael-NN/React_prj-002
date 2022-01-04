@@ -18,6 +18,10 @@
     margin: auto;
   }
 
+  .gamePiece.red, .gamePiece.yellow {
+    border: 2px solid black;
+  }
+
   .cols-5 {
     max-width: 20%;
   }

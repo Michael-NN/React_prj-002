@@ -272,11 +272,20 @@ class KafatzBoard extends React.Component {
                     <h2>Rules</h2>
                     <p>
                         Players take turns moving one of their own color pieces.
+                    </p>
+                    <p>
                         A piece can be moved one space horizontally, vertically, or diagonally.
-                        If the piece you are move is adjacent to another piece of your color, you may "jump" it over the neighboring piece, moving it two spaces in that direction.
-                        When a piece is selected, the spaces to which it is able to move will be highlighted.
-                        You may only move one of your pieces into a space occupied by your opponent's piece when moving it by way of a jump.
+                    </p>
+                    <p>
+                        If the piece you are moving is adjacent to another piece of your color, you may "jump" it over the neighboring piece, moving it two spaces in that direction.
+                    </p>
+                    <p>
+                        You may only move one of your pieces into a space occupied by your opponent's piece when moving by way of a jump.
+                    </p>
+                    <p>
                         When this happens, the opponent's piece is removed from play.
+                    </p>
+                    <p>
                         The game ends when one player has eliminated all but one of their oppoent's pieces, thereby preventing them from performing jumps.
                     </p>
                 </div>
