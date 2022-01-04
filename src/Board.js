@@ -7,9 +7,8 @@ class Board extends React.Component {
     constructor(props) {
         super(props);
         const defaults = {
-            showLegal: true,
-            rowCount: 5,
-            colCount: 5,
+            showLegal: false,
+            boardSize: 5,
             cpu1: 0,
             cpu2: 0,
         }
@@ -18,8 +17,9 @@ class Board extends React.Component {
         const hasLegalMove = true;
         const showLegal = defaults.showLegal;
         const winner = null;
-        const rowCount = defaults.rowCount;
-        const colCount = defaults.colCount;
+        const boardSize = defaults.boardSize;
+        const rowCount = boardSize;
+        const colCount = boardSize;
         const startRow = Math.floor(rowCount/2);
         const startCol = Math.floor(colCount/2);
         const curRow = startRow;
@@ -37,6 +37,7 @@ class Board extends React.Component {
             hasLegalMove,
             showLegal,
             winner,
+            boardSize,
             rowCount,
             colCount,
             startRow,
@@ -84,9 +85,6 @@ class Board extends React.Component {
     renderRow(rowNumber, length) {
         let className = 'row'
         switch(this.state.rowCount) {
-            case 3:
-                className += ' rows-3'
-                break;
             case 5:
                 className += ' rows-5'
                 break;
@@ -96,7 +94,10 @@ class Board extends React.Component {
             case 9:
                 className += ' rows-9'
                 break;
-            default:
+                case 11:
+                    className += ' rows-11'
+                    break;
+                default:
                 className += ''
         }
             return <div className={className}>{Array(length).fill(null).map((element, index) => this.renderSquare(rowNumber, index))}</div>;
@@ -107,6 +108,7 @@ class Board extends React.Component {
     }
 
     handleKeyUp(event) {
+        event.preventDefault();
         const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
         let retRow = this.state.retRow;
         let retCol = this.state.retCol;
@@ -136,6 +138,12 @@ class Board extends React.Component {
         retCol = clamp(retCol, Math.max(0, this.state.curCol-1), Math.min(this.state.colCount-1, this.state.curCol+1));
         this.setState({retRow, retCol});
         document.getElementById(retRow + ',' + retCol).focus();
+    }
+
+    handleKeyDown(event) {
+        if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
+            event.preventDefault();
+        }
     }
 
     handleFocus(rowNumber, colNumber) {
@@ -231,11 +239,11 @@ class Board extends React.Component {
 
     minMaxBestMove(squares, row, col, steps, best) {
         if (steps===0) {
-            return {value: this.heuristic(row, col)};
+            return {value: this.heuristic(row, col), turns: 0};
         } else if ((row === 0 && col === 0) || (row === this.state.rowCount-1 && col === this.state.colCount-1)) {
-            return {value: 1};
+            return {value: 1, turns: 0};
         } else if ((row === this.state.rowCount-1 && col === 0) || (row === 0 && col === this.state.colCount-1)) {
-            return {value: -1};
+            return {value: -1, turns: 0};
         } else {
             let moves = new Array(8).fill(null);
             for (let i = 0; i < 8; i++) {
@@ -248,19 +256,19 @@ class Board extends React.Component {
             }
             const valueList = moves.map(element => element?element.value:null);
             const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
-            let bestMoves = [];
-            valueList.forEach((element, index) => {
-                if (element === bestValue) {
+
+            const leadMoves = moves.map(element => (element!==null && element.value===bestValue)?element:null);
+            const turnsList = leadMoves.map(element => element?element.turns:null);
+            const bestTurns = ((best==='max'&&bestValue<=0)||(best==='min'&&bestValue>=0))?Math.max(...turnsList.filter(element => element!==null)):Math.min(...turnsList.filter(element => element!==null));
+
+            let bestMoves = []
+            moves.forEach((element, index) => {
+                if (element !== null && element.value === bestValue && element.turns === bestTurns) {
                     bestMoves.push(index);
                 }
             })
             const bestMove = bestMoves[Math.floor(Math.random()*bestMoves.length)];
-            /*
-            let valueList = moves.map(element => element?element.value:null).filter(element => element!==null);
-            let bestValue = best==='max'?Math.max(...valueList):Math.min(...valueList);
-            let bestMove = moves.findIndex(element => element!==null && element.value===bestValue);
-            */
-            return {move: bestMove, value: bestValue};
+            return {move: bestMove, value: bestValue, turns: bestTurns+1};
         }
     }
 
@@ -270,7 +278,7 @@ class Board extends React.Component {
         const rowFromCenter = Math.abs(cenRow - row);
         const colFromCenter = Math.abs(cenCol - col);
         const radius = Math.min(rowFromCenter, colFromCenter);
-        const stepSize = 1/Math.floor(this.state.rowCount/2);
+        const stepSize = 1/Math.floor(this.state.boardSize/2);
         const sign = ((row <= cenRow && col <= cenCol) || (row > cenRow && col > cenCol))?1:-1;
         return sign*radius*stepSize;
     }
@@ -377,12 +385,13 @@ class Board extends React.Component {
         }
     }
 
-    resetGame(newRowCount, newColCount, newCpu1, newCpu2) {
+    resetGame(newBoardSize, newCpu1, newCpu2) {
         const gameOngoing = true;
         const playerOneTurn = true;
         const winner = null;
-        const rowCount = newRowCount?newRowCount:this.state.defaults.rowCount;
-        const colCount = newColCount?newColCount:this.state.defaults.colCount;
+        const boardSize = newBoardSize?newBoardSize:this.state.defaults.boardSize;
+        const rowCount = boardSize;
+        const colCount = boardSize;
         const startRow = Math.floor(rowCount/2);
         const startCol = Math.floor(colCount/2);
         const curRow = startRow;
@@ -398,17 +407,19 @@ class Board extends React.Component {
         squares[0][colCount-1] = 'G2';
         squares[rowCount-1][0] = 'G2';
         const defaults = {
-            rowCount,
-            colCount,
+            boardSize,
             cpu1,
             cpu2
         }
-        this.setState({defaults, gameOngoing, playerOneTurn, winner, rowCount, colCount, startRow, startCol, curRow, curCol, retRow, retCol, cpu1, cpu2, squares},this.detectCpuTurn);
-        document.getElementById(retRow + ',' + retCol).focus();
+        this.setState({defaults, gameOngoing, playerOneTurn, winner, boardSize, rowCount, colCount, startRow, startCol, curRow, curCol, retRow, retCol, cpu1, cpu2, squares},this.detectCpuTurn);
+        const reticle = document.getElementById(retRow + ',' + retCol);
+        if (reticle) {
+            reticle.focus();
+        }
     }
 
     handleSettings(settings) {
-        this.resetGame(settings.rowCount, settings.colCount, settings.cpu1, settings.cpu2);
+        this.resetGame(settings.boardSize, settings.cpu1, settings.cpu2);
     }
 
     render() {
@@ -436,8 +447,7 @@ class Board extends React.Component {
                 {this.renderBoard(this.state.rowCount,this.state.colCount)}
                 <button onClick={() => this.resetGame(null, null, null, null)}>Restart</button>
                 <Settings
-                    rowCount={this.state.rowCount}
-                    colCount={this.state.colCount}
+                    boardSize={this.state.boardSize}
                     cpu1={this.state.cpu1}
                     cpu2={this.state.cpu2}
                     handleSubmit={this.handleSettings}
@@ -456,11 +466,13 @@ class Board extends React.Component {
 
     componentDidMount() {
         document.addEventListener('keyup', this.handleKeyUp);
+        document.addEventListener('keydown', this.handleKeyDown);
         this.detectCpuTurn();
     }
 
     componentWillUnmount() {
         document.removeEventListener('keyup', this.handleKeyUp);
+        document.addEventListener('keydown', this.handleKeyDown);
     }
 }
 

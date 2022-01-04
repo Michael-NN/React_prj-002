@@ -4,15 +4,14 @@
     max-height: 100vw;
     max-width: 100vw;
     margin: auto;
+    padding: 1%;
+    background: blue;
+    border-radius: 2%;
 }
 
 .row {
     height: 100px;
     width: 100%;
-}
-
-.rows-3 {
-    max-height: 33.33%;
 }
 
 .rows-5 {
@@ -25,6 +24,10 @@
 
 .rows-9 {
     max-height: 11.11%;
+}
+
+.rows-11 {
+    max-height: 9.09%;
 }
 
 .rulesBox {

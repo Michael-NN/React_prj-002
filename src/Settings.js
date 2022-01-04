@@ -3,30 +3,23 @@ import React from 'react';
 class Settings extends React.Component {
     constructor(props) {
         super(props);
-        const rowCount = props.rowCount;
-        const colCount = props.colCount;
+        const boardSize = props.boardSize;
         const cpu1 = props.cpu1;
         const cpu2 = props.cpu2;
         this.state = {
-            rowCount,
-            colCount,
+            boardSize,
             cpu1,
             cpu2
         }
 
-        this.handleChangeRowCount = this.handleChangeRowCount.bind(this);
-        this.handleChangeColCount = this.handleChangeColCount.bind(this);
+        this.handleChangeBoardSize = this.handleChangeBoardSize.bind(this);
         this.handleChangeCpu1 = this.handleChangeCpu1.bind(this);
         this.handleChangeCpu2 = this.handleChangeCpu2.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleChangeRowCount(event) {
-        this.setState({rowCount: parseInt(event.target.value)});
-    }
-
-    handleChangeColCount(event) {
-        this.setState({colCount: parseInt(event.target.value)});
+    handleChangeBoardSize(event) {
+        this.setState({boardSize: parseInt(event.target.value)});
     }
 
     handleChangeCpu1(event) {
@@ -45,29 +38,18 @@ class Settings extends React.Component {
         return (
             <div>
                 <label>
-                    Rows:
+                    Size:
                     <input
                         type="number"
-                        value={this.state.rowCount}
-                        min="3"
-                        max="9"
+                        value={this.state.boardSize}
+                        min="5"
+                        max="11"
                         step="2"
-                        onChange = {this.handleChangeRowCount}
+                        onChange = {this.handleChangeBoardSize}
                     />
                 </label>
                 <label>
-                    Columns:
-                    <input
-                        type="number"
-                        value={this.state.colCount}
-                        min="3"
-                        max="9"
-                        step="2"
-                        onChange = {this.handleChangeColCount}
-                    />
-                </label>
-                <label>
-                    CPU 1:
+                    Red CPU:
                     <input
                         type="number"
                         value={this.state.cpu1}
@@ -78,7 +60,7 @@ class Settings extends React.Component {
                     />
                 </label>
                 <label>
-                    CPU 2:
+                    Yellow CPU:
                     <input
                     type="number"
                     value={this.state.cpu2}

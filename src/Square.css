@@ -8,11 +8,14 @@
     border-radius: 10%;
     padding: 0;
     text-align: center;
-    border: 5px solid #E7DFDD;
+    border: 5px solid blue;
   }
 
-  .cols-3 {
-    max-width: 33.33%;
+  .gamePiece {
+    height: 85%;
+    width: 85%;
+    border-radius: 100%;
+    margin: auto;
   }
 
   .cols-5 {
@@ -27,20 +30,16 @@
     max-width: 11.11%;
   }
 
-.one {
+  .cols-11 {
+    max-width: 9.09%;
+  }
+
+.red {
   background: red;
 }
 
-.two {
+.yellow {
   background: yellow;
-}
-
-.goalOne {
-  border: 5px solid red;
-}
-
-.goalTwo {
-  border: 5px solid yellow;
 }
 
 .fallen {

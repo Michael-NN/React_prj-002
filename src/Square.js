@@ -1,58 +1,61 @@
 import './Square.css';
 
 function Square (props) {
-    let className = 'button';
+    let buttonClass = 'button';
+    let gamePieceClass = 'gamePiece';
     switch(props.colCount) {
-        case 3:
-            className += ' cols-3'
-            break;
         case 5:
-            className += ' cols-5'
+            buttonClass += ' cols-5'
             break;
         case 7:
-            className += ' cols-7'
+            buttonClass += ' cols-7'
             break;
         case 9:
-            className += ' cols-9'
+            buttonClass += ' cols-9'
+            break;
+        case 11:
+            buttonClass += ' cols-11'
             break;
         default:
-            className += ''
+            buttonClass += ''
     }
     let tabIndex = -1;
     if (props.ret) {
-        className += ' ret';
+        buttonClass += ' ret';
     }
     if (props.adj && props.value !== 'X') {
-        className += ' legal';
+        buttonClass += ' legal';
         tabIndex = 0;
     }
     if (props.goal === 'G1') {
-        className += ' goalOne'
+        buttonClass += ' red'
     }
     if (props.goal === 'G2') {
-        className += ' goalTwo'
+        buttonClass += ' yellow'
     }
     switch(props.value) {
         case '1':
-            className += ' current one'
+            gamePieceClass += ' red'
             break;
         case '2':
-            className += ' current two'
+            gamePieceClass += ' yellow'
             break;
         case 'X':
-            className += ' fallen'
+            buttonClass += ' fallen'
             break;
         default:
-            className += ''
+            buttonClass += ''
     }
     return (
         <button
             id = {props.squid}
-            className={className}
+            className={buttonClass}
             tabIndex = {tabIndex}
             onClick={props.onClick}
             onFocus={props.onFocus}
         >
+            <div className={gamePieceClass}>
+            </div>
         </button>
     );
 }
