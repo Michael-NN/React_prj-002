@@ -20,6 +20,7 @@
 
   .gamePiece.red, .gamePiece.yellow {
     border: 2px solid black;
+    box-sizing: border-box;
   }
 
   .cols-5 {

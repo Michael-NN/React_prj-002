@@ -1,3 +1,21 @@
+.settingsPanel {
+    padding: 1%;
+}
+
 .settingInput {
+    display: block;
     margin: 5px;
+}
+
+.controlButton {
+    padding: 1%;
+    margin: 1%;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background-color: hsl(180, 42%, 68%);
+    border: none;
+    outline: none;
+}
+
+.controlButton:hover, .controlButton:focus {
+    background-color: aqua;
 }

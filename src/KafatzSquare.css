@@ -28,12 +28,15 @@
 
 .selected {
     border: 5px solid cyan;
+    box-sizing: border-box;
 }
 
 .threatened {
     border: 5px solid red;
+    box-sizing: border-box;
 }
 
 .kafatzRet {
     border: 5px solid cyan;
+    box-sizing: border-box;
 }

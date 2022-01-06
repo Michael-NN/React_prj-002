@@ -17,6 +17,7 @@ class Settings extends React.Component {
         this.handleChangeCpu1 = this.handleChangeCpu1.bind(this);
         this.handleChangeCpu2 = this.handleChangeCpu2.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleReset = this.handleReset.bind(this);
     }
 
     handleChangeBoardSize(event) {
@@ -35,13 +36,42 @@ class Settings extends React.Component {
         this.props.handleSubmit(this.state);
     }
 
+    handleReset(event) {
+        const boardSize = this.props.boardSize;
+        const cpu1 = this.props.cpu1;
+        const cpu2 = this.props.cpu2;
+        this.setState({boardSize, cpu1, cpu2});
+        this.props.handleReset(null, null, null);
+    }
+
+    displayBoardSize() {
+        return ' ' + this.state.boardSize;
+    }
+
+    displayCpu1() {
+        if (this.state.cpu1 === 0) {
+            return ' Human';
+        } else {
+            return ' CPU ' + this.state.cpu1;
+        }
+    }
+
+    displayCpu2() {
+        if (this.state.cpu2 === 0) {
+            return ' Human';
+        } else {
+            return ' CPU ' + this.state.cpu2;
+        }
+    }
+
     render() {
         return (
-            <div>
+            <div className="settingsPanel">
                 <label className="settingInput">
                     Size:
+                    {this.displayBoardSize()}
                     <input
-                        type="number"
+                        type="range"
                         value={this.state.boardSize}
                         min="5"
                         max="11"
@@ -50,9 +80,10 @@ class Settings extends React.Component {
                     />
                 </label>
                 <label className="settingInput">
-                    Red CPU:
+                    Red:
+                    {this.displayCpu1()}
                     <input
-                        type="number"
+                        type="range"
                         value={this.state.cpu1}
                         min="0"
                         max="5"
@@ -61,9 +92,10 @@ class Settings extends React.Component {
                     />
                 </label>
                 <label className="settingInput">
-                    Yellow CPU:
+                    Yellow:
+                    {this.displayCpu2()}
                     <input
-                    type="number"
+                    type="range"
                     value={this.state.cpu2}
                     min="0"
                     max="5"
@@ -72,6 +104,11 @@ class Settings extends React.Component {
                     />
                 </label>
                 <button
+                    className="controlButton"
+                    onClick={this.handleReset}
+                >Restart</button>
+                <button
+                    className="controlButton"
                     onClick={this.handleSubmit}
                 >Save</button>
             </div>

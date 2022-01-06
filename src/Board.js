@@ -51,6 +51,7 @@ class Board extends React.Component {
             squares,
         }
         this.handleKeyUp = this.handleKeyUp.bind(this);
+        this.resetGame = this.resetGame.bind(this);
         this.handleSettings = this.handleSettings.bind(this);
     }
 
@@ -129,7 +130,7 @@ class Board extends React.Component {
                 if (this.state.gameOngoing) {
                     this.handleClick(retRow, retCol);
                 } else {
-                    this.resetGame(null, null, null, null);
+                    this.resetGame(null, null, null);
                 }
                 break;
             default:
@@ -448,12 +449,11 @@ class Board extends React.Component {
             <div>
                 <h1>{headerText}</h1>
                 {this.renderBoard(this.state.rowCount,this.state.colCount)}
-                <button className="restartButton" onClick={() => this.resetGame(null, null, null, null)}>Restart</button>
                 <Settings
-                    className="settingsPanel"
                     boardSize={this.state.boardSize}
                     cpu1={this.state.cpu1}
                     cpu2={this.state.cpu2}
+                    handleReset={this.resetGame}
                     handleSubmit={this.handleSettings}
                 />
                 <div className="rulesBox">
