@@ -207,11 +207,7 @@ class Board extends React.Component {
 
     cpuMove(steps, best) {
         let result;
-        if (this.state.prune) {
-            result = this.minMaxBestMoveAlphaBeta(this.state.squares, this.state.curRow, this.state.curCol, steps, best, Infinity, -Infinity);
-        } else {
-            result = this.minMaxBestMove(this.state.squares, this.state.curRow, this.state.curCol, steps, best);
-        }
+        result = this.minMaxBestMove(this.state.squares, this.state.curRow, this.state.curCol, steps, best);
         switch (result.move) {
             case 0:
                 this.setCurrent(this.state.curRow-1, this.state.curCol);
@@ -241,64 +237,6 @@ class Board extends React.Component {
         }
     }
 
-    shuffleArray (array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
-        }
-        return array;
-    }
-
-    minMaxBestMoveAlphaBeta(squares, row, col, steps, best, alpha, beta) {
-        let lilSib = alpha;
-        let bigSib = beta;
-        if (steps===0) {
-            return {value: this.heuristic(row, col), turns: 0};
-        } else if ((row === 0 && col === 0) || (row === this.state.rowCount-1 && col === this.state.colCount-1)) {
-            return {value: 1, turns: 0};
-        } else if ((row === this.state.rowCount-1 && col === 0) || (row === 0 && col === this.state.colCount-1)) {
-            return {value: -1, turns: 0};
-        } else {
-            let moves = this.shuffleArray(new Array(8).fill(null).map((_, index) => index));
-            for (let i = 0; i < 8; i++) {
-                let {mutRow, mutCol} = this.mutateIndices(row, col, moves[i]);
-                let valid = mutRow >= 0 && mutRow < this.state.rowCount && mutCol >= 0 && mutCol < this.state.colCount && squares[mutRow][mutCol] !== 'X';
-                if(valid) {
-                    let mutSquares = this.mutateSquares(squares, mutRow, mutCol, best);
-                    const temp = moves[i];
-                    moves[i] = this.minMaxBestMoveAlphaBeta(mutSquares, mutRow, mutCol, steps-1, best==='max'?'min':'max', lilSib, bigSib);
-                    moves[i].move = temp;
-                    if (best==='max') {
-                        if (moves[i].value >= alpha) {
-                            return null;
-                        }
-                        lilSib = Math.min(lilSib, moves[i].value)
-                    } else {
-                        if (moves[i].value <= beta) {
-                            return null;
-                        }
-                        bigSib = Math.max(bigSib, moves[i].value);
-                    }
-                } else {
-                    moves[i] = null;
-                }
-            }
-            if (moves.every(element => element === null)) {
-                return {value: 0, turns: 0}
-            }
-
-            const valueList = moves.map(element => element?element.value:null);
-            const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
-
-            const bestMove = moves.find(element => element?element.value === bestValue:false);
-            return bestMove;
-//            return {move: bestMove.move, value: bestMove.value, turns: bestMove.turns};
-        }
-    }
-
-    // Backup of original
     minMaxBestMove(squares, row, col, steps, best) {
         if (steps===0) {
             return {value: this.heuristic(row, col), turns: 0};
@@ -337,6 +275,39 @@ class Board extends React.Component {
         }
     }
 
+    /*
+    minMaxBestMove(move, squares, row, col, steps, best) {
+        if (steps===0) {
+            return {move, value: this.heuristic(row, col), turns: 0};
+        } else if ((row === 0 && col === 0) || (row === this.state.rowCount-1 && col === this.state.colCount-1)) {
+            return {move, value: 1, turns: 0};
+        } else if ((row === this.state.rowCount-1 && col === 0) || (row === 0 && col === this.state.colCount-1)) {
+            return {move, value: -1, turns: 0};
+        } else {
+            const nodes = this.getLegalMoves(squares, row, col);
+            if (nodes.length === 0) {
+                return {move, value: 0, turns: 0}
+            } else {
+                console.log(nodes);
+                const moves = nodes.map(node => this.minMaxBestMove(node.move, node.squares, node.row, node.col, steps-1, best==='max'?'min':'max'));
+                console.log(moves);
+                const valueList = moves.map(result => result.value);
+                console.log(valueList);
+                const bestValue = best==='max'?Math.max(...valueList):Math.min(...valueList);
+                console.log(bestValue);
+                const leadMoves = moves.filter(move => move.value === bestValue);
+                console.log(leadMoves);
+                const turnsList = leadMoves.map(move => move.turns);
+                console.log(turnsList);
+                const bestTurns = (best==='max'&&bestValue>=0)||(best==='min'&&bestValue<=0)?Math.max(...turnsList):Math.min(...turnsList);
+                console.log(bestTurns);
+                const bestMove = leadMoves.find(move => move.turns === bestTurns);
+                return {move: move?move:bestMove.move, value: bestValue, turns: bestTurns};
+            }
+        }
+
+    }*/
+
     heuristic(row, col) {
         const cenRow = this.state.startRow;
         const cenCol = this.state.startCol;
@@ -346,6 +317,35 @@ class Board extends React.Component {
         const stepSize = 1/Math.floor(this.state.boardSize/2);
         const sign = ((row <= cenRow && col <= cenCol) || (row > cenRow && col > cenCol))?1:-1;
         return sign*radius*stepSize;
+    }
+
+    getLegalMoves(squares, row, col) {
+        let legalMoves = [];
+        for (let i = 0; i < 8; i++) {
+            let {mutRow, mutCol} = this.mutateIndices(row, col, i);
+            let valid = mutRow >= 0 && mutRow < this.state.rowCount && mutCol >= 0 && mutCol < this.state.colCount && squares[mutRow][mutCol] !== 'X';
+            if (valid) {
+                let mutSquares = this.mutateSquares(squares, mutRow, mutCol);
+                legalMoves.push({
+                    move: i,
+                    squares: mutSquares,
+                    row: mutRow,
+                    col: mutCol,
+                });
+            }
+        }
+        legalMoves = this.shuffleArray(legalMoves);
+        return legalMoves;
+    }
+
+    shuffleArray (array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
     }
 
     mutateIndices(row, col, direction) {
