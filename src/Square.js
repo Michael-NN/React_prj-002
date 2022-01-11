@@ -25,7 +25,7 @@ function Square (props) {
     }
     if (props.adj && props.value !== 'X') {
         buttonClass += ' legal';
-        tabIndex = 0;
+//        tabIndex = 0;
     }
     if (props.goal === 'G1') {
         buttonClass += ' red'
@@ -52,7 +52,6 @@ function Square (props) {
             className={buttonClass}
             tabIndex = {tabIndex}
             onClick={props.onClick}
-            onFocus={props.onFocus}
         >
             <div className={gamePieceClass}>
             </div>

@@ -51,10 +51,12 @@
   background: blue;
 }
 
+/*
 .legal {
   border: 5px solid lightblue;
 
 }
+*/
 
 .ret, .button:hover {
   border: 5px solid;

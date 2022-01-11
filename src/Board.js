@@ -12,6 +12,7 @@ class Board extends React.Component {
             cpu1: 0,
             cpu2: 0,
         }
+        const prune = false;
         const gameOngoing = true;
         const playerOneTurn = true;
         const hasLegalMove = true;
@@ -32,6 +33,7 @@ class Board extends React.Component {
         squares[curRow][curCol] = '1';
         this.state = {
             defaults,
+            prune,
             gameOngoing,
             playerOneTurn,
             hasLegalMove,
@@ -58,7 +60,7 @@ class Board extends React.Component {
     renderSquare(rowNumber, colNumber) {
         const squid = rowNumber + ',' + colNumber;
         const retFlag = rowNumber===this.state.retRow && colNumber===this.state.retCol;
-        const adjFlag = this.state.showLegal && (Math.abs(rowNumber - this.state.curRow) <= 1) && (Math.abs(colNumber - this.state.curCol) <= 1) && !(rowNumber===this.state.curRow && colNumber===this.state.curCol)
+        const adjFlag = (Math.abs(rowNumber - this.state.curRow) <= 1) && (Math.abs(colNumber - this.state.curCol) <= 1) && !(rowNumber===this.state.curRow && colNumber===this.state.curCol)
         let goalFlag = null;
         if ((rowNumber===0 && colNumber===0) || (rowNumber===this.state.rowCount-1 && colNumber===this.state.colCount-1)) {
             goalFlag = 'G1';
@@ -78,7 +80,6 @@ class Board extends React.Component {
                 goal = {goalFlag}
                 value = {this.state.squares[rowNumber][colNumber]}
                 onClick = {() => this.handleClick(rowNumber, colNumber)}
-                onFocus = {() => this.handleFocus(rowNumber, colNumber)}
 			/>
 		);
     }
@@ -105,52 +106,49 @@ class Board extends React.Component {
     }
 
     renderBoard(rows, cols) {
-        return <div className='board'>{Array(rows).fill(null).map((element, index) => this.renderRow(index, cols))}</div>;
+        return <div id="board" className='board' tabIndex="0">{Array(rows).fill(null).map((element, index) => this.renderRow(index, cols))}</div>;
     }
 
     handleKeyUp(event) {
-        event.preventDefault();
-        const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-        let retRow = this.state.retRow;
-        let retCol = this.state.retCol;
-        switch(event.code) {
-            case 'ArrowUp':
-                retRow += -1;
-                break;
-            case 'ArrowDown':
-                retRow += 1;
-                break;
-            case 'ArrowLeft':
-                retCol += -1;
-                break;
-            case 'ArrowRight':
-                retCol += 1;
-                break;
-            case 'Space':
-                if (this.state.gameOngoing) {
-                    this.handleClick(retRow, retCol);
-                } else {
-                    this.resetGame(null, null, null);
-                }
-                break;
-            default:
+        const gameControlKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+        if (gameControlKeys.includes(event.code)) {
+            event.preventDefault();
+            const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+            let retRow = this.state.retRow;
+            let retCol = this.state.retCol;
+            switch(event.code) {
+                case 'ArrowUp':
+                    retRow += -1;
+                    break;
+                case 'ArrowDown':
+                    retRow += 1;
+                    break;
+                case 'ArrowLeft':
+                    retCol += -1;
+                    break;
+                case 'ArrowRight':
+                    retCol += 1;
+                    break;
+                case 'Space':
+                    if (this.state.gameOngoing) {
+                        this.handleClick(retRow, retCol);
+                    } else {
+                        this.resetGame(null, null, null);
+                    }
+                    break;
+                default:
+            }
+            retRow = clamp(retRow, Math.max(0, this.state.curRow-1), Math.min(this.state.rowCount-1, this.state.curRow+1));
+            retCol = clamp(retCol, Math.max(0, this.state.curCol-1), Math.min(this.state.colCount-1, this.state.curCol+1));
+            this.setState({retRow, retCol});
         }
-        retRow = clamp(retRow, Math.max(0, this.state.curRow-1), Math.min(this.state.rowCount-1, this.state.curRow+1));
-        retCol = clamp(retCol, Math.max(0, this.state.curCol-1), Math.min(this.state.colCount-1, this.state.curCol+1));
-        this.setState({retRow, retCol});
-        document.getElementById(retRow + ',' + retCol).focus();
     }
 
     handleKeyDown(event) {
-        if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
+        const boardIgnores = ['ArrowUp', 'ArrowDown', 'Space']
+        if (boardIgnores.includes(event.code)) {
             event.preventDefault();
         }
-    }
-
-    handleFocus(rowNumber, colNumber) {
-        const retRow = rowNumber;
-        const retCol = colNumber;
-		this.setState({retRow, retCol});
     }
 
     handleClick(rowNumber, colNumber) {
@@ -208,7 +206,12 @@ class Board extends React.Component {
     }
 
     cpuMove(steps, best) {
-        const result = this.minMaxBestMove(this.state.squares, this.state.curRow, this.state.curCol, steps, best);
+        let result;
+        if (this.state.prune) {
+            result = this.minMaxBestMoveAlphaBeta(this.state.squares, this.state.curRow, this.state.curCol, steps, best, Infinity, -Infinity);
+        } else {
+            result = this.minMaxBestMove(this.state.squares, this.state.curRow, this.state.curCol, steps, best);
+        }
         switch (result.move) {
             case 0:
                 this.setCurrent(this.state.curRow-1, this.state.curCol);
@@ -238,6 +241,64 @@ class Board extends React.Component {
         }
     }
 
+    shuffleArray (array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
+    }
+
+    minMaxBestMoveAlphaBeta(squares, row, col, steps, best, alpha, beta) {
+        let lilSib = alpha;
+        let bigSib = beta;
+        if (steps===0) {
+            return {value: this.heuristic(row, col), turns: 0};
+        } else if ((row === 0 && col === 0) || (row === this.state.rowCount-1 && col === this.state.colCount-1)) {
+            return {value: 1, turns: 0};
+        } else if ((row === this.state.rowCount-1 && col === 0) || (row === 0 && col === this.state.colCount-1)) {
+            return {value: -1, turns: 0};
+        } else {
+            let moves = this.shuffleArray(new Array(8).fill(null).map((_, index) => index));
+            for (let i = 0; i < 8; i++) {
+                let {mutRow, mutCol} = this.mutateIndices(row, col, moves[i]);
+                let valid = mutRow >= 0 && mutRow < this.state.rowCount && mutCol >= 0 && mutCol < this.state.colCount && squares[mutRow][mutCol] !== 'X';
+                if(valid) {
+                    let mutSquares = this.mutateSquares(squares, mutRow, mutCol, best);
+                    const temp = moves[i];
+                    moves[i] = this.minMaxBestMoveAlphaBeta(mutSquares, mutRow, mutCol, steps-1, best==='max'?'min':'max', lilSib, bigSib);
+                    moves[i].move = temp;
+                    if (best==='max') {
+                        if (moves[i].value >= alpha) {
+                            return null;
+                        }
+                        lilSib = Math.min(lilSib, moves[i].value)
+                    } else {
+                        if (moves[i].value <= beta) {
+                            return null;
+                        }
+                        bigSib = Math.max(bigSib, moves[i].value);
+                    }
+                } else {
+                    moves[i] = null;
+                }
+            }
+            if (moves.every(element => element === null)) {
+                return {value: 0, turns: 0}
+            }
+
+            const valueList = moves.map(element => element?element.value:null);
+            const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
+
+            const bestMove = moves.find(element => element?element.value === bestValue:false);
+            return bestMove;
+//            return {move: bestMove.move, value: bestMove.value, turns: bestMove.turns};
+        }
+    }
+
+    // Backup of original
     minMaxBestMove(squares, row, col, steps, best) {
         if (steps===0) {
             return {value: this.heuristic(row, col), turns: 0};
@@ -415,11 +476,11 @@ class Board extends React.Component {
             cpu1,
             cpu2
         }
-        this.setState({defaults, gameOngoing, playerOneTurn, winner, boardSize, rowCount, colCount, startRow, startCol, curRow, curCol, retRow, retCol, cpu1, cpu2, squares},this.detectCpuTurn);
-        const reticle = document.getElementById(retRow + ',' + retCol);
-        if (reticle) {
-            reticle.focus();
+        const board = document.getElementById('board');
+        if (board) {
+            board.focus();
         }
+        this.setState({defaults, gameOngoing, playerOneTurn, winner, boardSize, rowCount, colCount, startRow, startCol, curRow, curCol, retRow, retCol, cpu1, cpu2, squares},this.detectCpuTurn);
     }
 
     handleSettings(settings) {
@@ -473,14 +534,19 @@ class Board extends React.Component {
     }
 
     componentDidMount() {
-        document.addEventListener('keyup', this.handleKeyUp);
-        document.addEventListener('keydown', this.handleKeyDown);
+        const board = document.getElementById('board');
+        board.addEventListener('keyup', this.handleKeyUp);
+        board.addEventListener('keydown', this.handleKeyDown);
+        if (board) {
+            board.focus();
+        }
         this.detectCpuTurn();
     }
 
     componentWillUnmount() {
-        document.removeEventListener('keyup', this.handleKeyUp);
-        document.addEventListener('keydown', this.handleKeyDown);
+        const board = document.getElementById('board');
+        board.removeEventListener('keyup', this.handleKeyUp);
+        board.addEventListener('keydown', this.handleKeyDown);
     }
 }
 

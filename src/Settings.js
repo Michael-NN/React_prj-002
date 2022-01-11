@@ -54,6 +54,21 @@ class Settings extends React.Component {
         } else {
             return ' CPU ' + this.state.cpu1;
         }
+        /*
+        switch (this.state.cpu1) {
+            case 0:
+                return ' Human';
+            case 2:
+                return ' Easy';
+            case 4:
+                return ' Medium';
+            case 6:
+                return ' Hard';
+            case 8:
+                return ' Expert';
+            default:
+                return '???';
+        }*/
     }
 
     displayCpu2() {
@@ -62,6 +77,21 @@ class Settings extends React.Component {
         } else {
             return ' CPU ' + this.state.cpu2;
         }
+        /*
+        switch (this.state.cpu2) {
+            case 0:
+                return ' Human';
+            case 2:
+                return ' Easy';
+            case 4:
+                return ' Medium';
+            case 6:
+                return ' Hard';
+            case 8:
+                return ' Expert';
+            default:
+                return '???';
+        }*/
     }
 
     render() {
@@ -71,6 +101,7 @@ class Settings extends React.Component {
                     Size:
                     {this.displayBoardSize()}
                     <input
+                        className="inputSlider"
                         type="range"
                         value={this.state.boardSize}
                         min="5"
@@ -83,6 +114,7 @@ class Settings extends React.Component {
                     Red:
                     {this.displayCpu1()}
                     <input
+                        className="inputSlider"
                         type="range"
                         value={this.state.cpu1}
                         min="0"
@@ -95,12 +127,13 @@ class Settings extends React.Component {
                     Yellow:
                     {this.displayCpu2()}
                     <input
-                    type="range"
-                    value={this.state.cpu2}
-                    min="0"
-                    max="5"
-                    step="1"
-                    onChange = {this.handleChangeCpu2}
+                        className="inputSlider"
+                        type="range"
+                        value={this.state.cpu2}
+                        min="0"
+                        max="5"
+                        step="1"
+                        onChange = {this.handleChangeCpu2}
                     />
                 </label>
                 <button
