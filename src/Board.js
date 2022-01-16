@@ -145,7 +145,7 @@ class Board extends React.Component {
     }
 
     handleKeyDown(event) {
-        const boardIgnores = ['ArrowUp', 'ArrowDown', 'Space']
+        const boardIgnores = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space']
         if (boardIgnores.includes(event.code)) {
             event.preventDefault();
         }

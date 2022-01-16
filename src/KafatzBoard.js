@@ -10,8 +10,7 @@ class KafatzBoard extends React.Component {
         const playerOneTurn = true;
         const selectedPiece = null;
         const legalIds = [];
-        const retRow = null;
-        const retCol = null;
+        const retPiece = null;
         const squares = [
             [2,2,0,0,2,2],
             [2,2,0,0,2,2],
@@ -27,18 +26,20 @@ class KafatzBoard extends React.Component {
             playerOneTurn,
             selectedPiece,
             legalIds,
-            retRow,
-            retCol,
+            retPiece,
             squares,
         }
 
         this.handleClick = this.handleClick.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
+        this.handleBoardFocus = this.handleBoardFocus.bind(this);
+        this.handleBoardUnfocus = this.handleBoardUnfocus.bind(this);
     }
 
     handleClick(row, col) {
         if (this.state.gameOngoing) {
             if ((this.state.playerOneTurn && this.state.squares[row][col] === 1) || (!this.state.playerOneTurn && this.state.squares[row][col] === 2)) {
+                //Clicking own piece
                 if (this.state.selectedPiece !== null && this.state.selectedPiece[0]===row && this.state.selectedPiece[1]===col) {
                         //deselect
                         this.setState({selectedPiece: null, legalIds: []});
@@ -48,23 +49,7 @@ class KafatzBoard extends React.Component {
                     const legalIds = this.legalFor([row, col]);
                     this.setState({selectedPiece: [row, col], legalIds});
                 }
-                /*
-                //I think the refactor above works, but I'm holding on to this for a bit, just in case.
-                if (this.state.selectedPiece === null) {
-                    //select
-                    const legalIds = this.legalFor([row, col]);
-                    this.setState({selectedPiece: [row, col], legalIds});
-                } else {
-                    if (this.state.selectedPiece[0]===row && this.state.selectedPiece[1]===col) {
-                        //deselect
-                        this.setState({selectedPiece: null, legalIds: []});
-                    } else {
-                        //select
-                        const legalIds = this.legalFor([row, col]);
-                        this.setState({selectedPiece: [row, col], legalIds});
-                    }
-                }*/
-            } else {
+            } else {//Not clicking own piece
                 if (this.state.selectedPiece !== null) {
                     if (this.state.legalIds.includes(row+','+col)) {
                         this.movePiece(this.state.selectedPiece, [row, col]);
@@ -76,18 +61,11 @@ class KafatzBoard extends React.Component {
         }
     }
 
-    handleFocus(rowNumber, colNumber) {
-        const retRow = rowNumber;
-        const retCol = colNumber;
-		this.setState({retRow, retCol});
-    }
-
     handleKeyUp(event) {
         event.preventDefault();
         const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-        if (this.state.retRow !== null && this.state.retCol !== null) {
-            let retRow = this.state.retRow;
-            let retCol = this.state.retCol;
+        if (this.state.retPiece !== null) {
+            let [retRow, retCol] = this.state.retPiece;
             switch(event.code) {
                 case 'ArrowUp':
                     retRow += -1;
@@ -112,15 +90,32 @@ class KafatzBoard extends React.Component {
             }
             retRow = clamp(retRow, 0, 5);
             retCol = clamp(retCol, 0, 5);
-            this.setState({retRow, retCol});
-            document.getElementById(retRow + ',' + retCol).focus();
+            this.setState({retPiece: [retRow, retCol]});
         }
     }
 
     handleKeyDown(event) {
-        if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
+        const boardIgnores = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space']
+        if (boardIgnores.includes(event.code)) {
             event.preventDefault();
         }
+    }
+
+    handleBoardFocus() {
+        if (this.state.retPiece === null) {
+            let retPiece = null;
+            if (this.state.selectedPiece) {
+                retPiece = this.state.selectedPiece;
+            } else {
+                retPiece = [0,0];
+            }
+            this.setState({retPiece});
+        }
+    }
+
+    handleBoardUnfocus() {
+        let retPiece = null;
+        this.setState({retPiece});
     }
 
     legalFor(fromCoord) {
@@ -201,8 +196,7 @@ class KafatzBoard extends React.Component {
         const playerOneTurn = true;
         const selectedPiece = null;
         const legalIds = [];
-        const retRow = null;
-        const retCol = null;
+        const retPiece = null;
         const squares = [
             [2,2,0,0,2,2],
             [2,2,0,0,2,2],
@@ -212,7 +206,7 @@ class KafatzBoard extends React.Component {
             [1,1,0,0,1,1]
         ]
 
-        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retRow, retCol, squares});
+        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retPiece, squares});
     }
 
     renderSquare(rowNumber, colNumber) {
@@ -226,12 +220,11 @@ class KafatzBoard extends React.Component {
                 legal = {this.state.legalIds.includes(squid)}
                 playersPiece = {(this.state.playerOneTurn)?value===1:value===2}
                 waitersPiece = {(this.state.playerOneTurn)?value===2:value===1}
-                ret = {this.state.retRow === rowNumber && this.state.retCol === colNumber}
+                ret = {this.state.retPiece && this.state.retPiece[0] === rowNumber && this.state.retPiece[1] === colNumber}
                 cpp = {(this.state.playerOneTurn && value === 1) || (!this.state.playerOneTurn && value ===2)}
                 value = {value}
                 selected = {this.state.selectedPiece && rowNumber === this.state.selectedPiece[0] && colNumber === this.state.selectedPiece[1]}
                 onClick = {() => this.handleClick(rowNumber, colNumber)}
-                onFocus = {() => this.handleFocus(rowNumber, colNumber)}
             />
 		);
     }
@@ -241,7 +234,9 @@ class KafatzBoard extends React.Component {
     }
 
     renderBoard() {
-        return <div className='kafatzBoard'>{Array(6).fill(null).map((element, index) => this.renderRow(index, 6))}</div>;
+        return <div className='kafatzBoard' id='board' tabIndex="0" onFocus={this.handleBoardFocus} onBlur={this.handleBoardUnfocus}>
+            {Array(6).fill(null).map((element, index) => this.renderRow(index, 6))}
+            </div>;
     }
 
     render() {
@@ -294,14 +289,19 @@ class KafatzBoard extends React.Component {
     }
 
     componentDidMount() {
-        document.addEventListener('keyup', this.handleKeyUp);
-        document.addEventListener('keydown', this.handleKeyDown);
+        const board = document.getElementById('board');
+        board.addEventListener('keyup', this.handleKeyUp);
+        board.addEventListener('keydown', this.handleKeyDown);
+        if (board) {
+            board.focus();
+        }
     }
 
     componentWillUnmount() {
-        document.removeEventListener('keyup', this.handleKeyUp);
-        document.addEventListener('keydown', this.handleKeyDown);
-    }
+        const board = document.getElementById('board');
+        board.removeEventListener('keyup', this.handleKeyUp);
+        board.addEventListener('keydown', this.handleKeyDown);
+   }
 }
 
 export default KafatzBoard;
