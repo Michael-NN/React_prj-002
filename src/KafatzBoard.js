@@ -32,6 +32,7 @@ class KafatzBoard extends React.Component {
 
         this.handleClick = this.handleClick.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
+        this.handleBoardClick = this.handleBoardClick.bind(this);
         this.handleBoardFocus = this.handleBoardFocus.bind(this);
         this.handleBoardUnfocus = this.handleBoardUnfocus.bind(this);
     }
@@ -101,13 +102,21 @@ class KafatzBoard extends React.Component {
         }
     }
 
+    //this is a crude solution at best
+    handleBoardClick() {
+        this.setState({retPiece: null});
+    }
+
     handleBoardFocus() {
         if (this.state.retPiece === null) {
             let retPiece = null;
             if (this.state.selectedPiece) {
                 retPiece = this.state.selectedPiece;
             } else {
-                retPiece = [0,0];
+                const target = this.state.playerOneTurn?1:2;
+                const retRow = this.state.squares.findIndex(row => row.includes(target));
+                const retCol = this.state.squares[retRow].indexOf(target);                
+                retPiece = [retRow, retCol];
             }
             this.setState({retPiece});
         }
@@ -234,7 +243,7 @@ class KafatzBoard extends React.Component {
     }
 
     renderBoard() {
-        return <div className='kafatzBoard' id='board' tabIndex="0" onFocus={this.handleBoardFocus} onBlur={this.handleBoardUnfocus}>
+        return <div className='kafatzBoard' id='board' tabIndex="0" onClick={this.handleBoardClick} onFocus={this.handleBoardFocus} onBlur={this.handleBoardUnfocus}>
             {Array(6).fill(null).map((element, index) => this.renderRow(index, 6))}
             </div>;
     }
@@ -262,7 +271,7 @@ class KafatzBoard extends React.Component {
             <div>
                 <h1>{headerText}</h1>
                 {this.renderBoard()}
-                <button onClick={() => this.resetGame()}>Restart</button>
+                <button className="kafatzControlButton" onClick={() => this.resetGame()}>Restart</button>
                 <div className="kafatzRulesBox">
                     <h2>Rules</h2>
                     <p>
@@ -292,9 +301,6 @@ class KafatzBoard extends React.Component {
         const board = document.getElementById('board');
         board.addEventListener('keyup', this.handleKeyUp);
         board.addEventListener('keydown', this.handleKeyDown);
-        if (board) {
-            board.focus();
-        }
     }
 
     componentWillUnmount() {
