@@ -10,6 +10,21 @@
     height: 16.66%;
 }
 
+.kafatzSettingsPanel {
+    padding: 1%;
+}
+
+.kafatzSettingInput {
+    display: block;
+    margin: auto;
+    width: 250px;
+    max-width: 90%;
+}
+
+.kafatzInputSlider {
+    width: 100%;
+}
+
 .kafatzControlButton {
     padding: 1%;
     margin: 1%;

@@ -19,6 +19,10 @@ class KafatzBoard extends React.Component {
             [1,1,0,0,1,1],
             [1,1,0,0,1,1]
         ]
+        const cpu1 = 0;
+        const inputCpu1 = 0;
+        const cpu2 = 0;
+        const inputCpu2 = 0;
         
         this.state = {
             gameOngoing,
@@ -28,6 +32,10 @@ class KafatzBoard extends React.Component {
             legalIds,
             retPiece,
             squares,
+            cpu1,
+            inputCpu1,
+            cpu2,
+            inputCpu2,
         }
 
         this.handleClick = this.handleClick.bind(this);
@@ -35,10 +43,12 @@ class KafatzBoard extends React.Component {
         this.handleBoardClick = this.handleBoardClick.bind(this);
         this.handleBoardFocus = this.handleBoardFocus.bind(this);
         this.handleBoardUnfocus = this.handleBoardUnfocus.bind(this);
+        this.handleChangeCpu1 = this.handleChangeCpu1.bind(this);
+        this.handleChangeCpu2 = this.handleChangeCpu2.bind(this);
     }
 
     handleClick(row, col) {
-        if (this.state.gameOngoing) {
+        if (this.state.gameOngoing && ((this.state.playerOneTurn && this.state.cpu1 === 0) || (!this.state.playerOneTurn && this.state.cpu2 === 0))) {
             if ((this.state.playerOneTurn && this.state.squares[row][col] === 1) || (!this.state.playerOneTurn && this.state.squares[row][col] === 2)) {
                 //Clicking own piece
                 if (this.state.selectedPiece !== null && this.state.selectedPiece[0]===row && this.state.selectedPiece[1]===col) {
@@ -47,7 +57,7 @@ class KafatzBoard extends React.Component {
 
                 } else {
                     //select
-                    const legalIds = this.legalFor([row, col]);
+                    const legalIds = this.legalFor([row, col], true);
                     this.setState({selectedPiece: [row, col], legalIds});
                 }
             } else {//Not clicking own piece
@@ -84,7 +94,7 @@ class KafatzBoard extends React.Component {
                     if (this.state.gameOngoing) {
                         this.handleClick(retRow, retCol);
                     } else {
-                        this.resetGame();
+                        this.resetGame(null, null);
                     }
                     break;
                 default:
@@ -123,23 +133,30 @@ class KafatzBoard extends React.Component {
     }
 
     handleBoardUnfocus() {
-        let retPiece = null;
-        this.setState({retPiece});
+        this.setState({retPiece: null});
     }
 
-    legalFor(fromCoord) {
+    legalFor(fromCoord, asText) {
         const [fromRow, fromCol] = fromCoord;
         let legalCoords = [];
         for (let i = Math.max(fromRow-2,0);i<=Math.min(fromRow+2,5);i++) {
             for (let j = Math.max(fromCol-2,0);j<=Math.min(fromCol+2,5);j++) {
                 if (this.spaceDistance(fromCoord,[i,j]) === 1 && this.state.squares[i][j] === 0) {
-                    legalCoords.push(i+','+j);
-                }
+                    if (asText) {
+                        legalCoords.push(i+','+j);
+                    } else {
+                        legalCoords.push([i,j]);
+                    }
+            }
                 if (this.spaceDistance(fromCoord,[i,j]) === 2 && this.manhattanDistance(fromCoord,[i,j])%2 === 0 && this.state.squares[fromRow][fromCol] !== this.state.squares[i][j]) {
                     const betweenRow = (fromRow+i)/2;
                     const betweenCol = (fromCol+j)/2;
                     if (this.state.squares[betweenRow][betweenCol] === this.state.squares[fromRow][fromCol]) {
-                        legalCoords.push(i+','+j);
+                        if (asText) {
+                            legalCoords.push(i+','+j);
+                        } else {
+                            legalCoords.push([i,j]);
+                        }
                     }
                 }
             }
@@ -160,21 +177,100 @@ class KafatzBoard extends React.Component {
 
     }
 
+    cpuMove(steps, best) {
+        const result = this.minMaxBestMove(this.state.squares, steps, best);
+        this.movePiece(...result.move);
+    }
+
+    minMaxBestMove(squares, steps, best) {
+        const {oneCount, twoCount} = this.countPieces(this.state.squares);
+        if (steps === 0) {
+            return {value: this.heuristic(oneCount, twoCount)};
+        } else if (oneCount === 1) {
+            return {value: -1};
+        } else if (twoCount === 1) {
+            return {value: 1};
+        } else {
+            let currentTurnPiece = [];
+            for (let i = 0; i<squares.length; i++) {
+                for (let j = 0; j<squares[i].length; j++) {
+                    if (squares[i][j] === (best==='max'?1:2)) {
+                        currentTurnPiece.push([i,j]);
+                    }
+                }
+            }
+            let movesList = [];
+            currentTurnPiece.forEach(fromCoord => {
+                const movementOptions = this.legalFor(fromCoord, false);
+                movesList.push(...movementOptions.map(toCoord => [fromCoord, toCoord]));
+            });
+            movesList = this.shuffleArray(movesList);
+            const childrenList = movesList.map(moveCoords => this.squaresChange(squares, moveCoords[0], moveCoords[1]));
+            const resultsList = childrenList.map(childSquares => this.minMaxBestMove(childSquares, steps-1, best==='max'?'min':'max'));
+
+            const valueList = resultsList.map(element => element?element.value:null);
+            const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
+
+            const bestIndex = valueList.findIndex(value => value === bestValue);
+            return {move: movesList[bestIndex], value: bestValue};
+        }
+    }
+
+    shuffleArray (array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
+    }
+
+    heuristic(oneCount, twoCount) {
+        return (oneCount-twoCount)/(Math.max(oneCount,twoCount)-1);
+    }
+
     movePiece(fromCoord, toCoord) {
-        const [fromRow, fromCol] = fromCoord;
-        const [toRow, toCol] = toCoord;
         const playerOneTurn = !this.state.playerOneTurn;
         const selectedPiece = null;
-		const squares = this.state.squares.slice();
-        squares[toRow][toCol] = squares[fromRow][fromCol];
-        squares[fromRow][fromCol] = 0;
+		const squares = this.squaresChange(this.state.squares, fromCoord, toCoord);
         this.setState({playerOneTurn, selectedPiece, legalIds: [], squares},this.detectEndState);
     }
 
+    squaresChange(initSquares, fromCoord, toCoord) {
+        const [fromRow, fromCol] = fromCoord;
+        const [toRow, toCol] = toCoord;
+		const finaSquares = this.cloneArray(initSquares);
+        finaSquares[toRow][toCol] = finaSquares[fromRow][fromCol];
+        finaSquares[fromRow][fromCol] = 0;
+        return finaSquares;
+    }
+
+    cloneArray(squares) {
+        const result = Array(6).fill(null).map(() => new Array(6).fill(null));
+        for (let i = 0; i<squares.length; i++) {
+            for (let j = 0; j<squares[i].length; j++) {
+                result[i][j] = squares[i][j];
+            }
+        }
+        return result;
+    }
+
     detectEndState() {
+        const {oneCount, twoCount} = this.countPieces(this.state.squares);
+        if (oneCount === 1) {
+            this.declareEnd(2);
+        } else if (twoCount === 1) {
+            this.declareEnd(1);
+        } else {
+            this.detectCpuTurn();
+        }
+    }
+
+    countPieces(squares) {
         let oneCount = 0;
         let twoCount = 0;
-        this.state.squares.forEach(row => {
+        squares.forEach(row => {
             row.forEach(square => {
                 if (square === 1) {
                     oneCount += 1;
@@ -184,12 +280,7 @@ class KafatzBoard extends React.Component {
                 }
             })
         })
-        if (oneCount === 1) {
-            this.declareEnd(2);
-        }
-        if (twoCount === 1) {
-            this.declareEnd(1);
-        }
+        return {oneCount, twoCount};
     }
 
     declareEnd(winner) {
@@ -199,7 +290,21 @@ class KafatzBoard extends React.Component {
         }
     }
 
-    resetGame() {
+    detectCpuTurn() {
+        if (this.state.gameOngoing) {
+            const playerOneTurn = this.state.playerOneTurn;
+            if (playerOneTurn===true && this.state.cpu1!==0) {
+//                this.cpuMove(this.state.cpu1, 'max');
+                setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
+            }
+            if (playerOneTurn===false && this.state.cpu2!==0) {
+//                this.cpuMove(this.state.cpu2, 'min');
+                setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
+            }
+        }
+    }
+
+    resetGame(newCpu1, newCpu2) {
         const gameOngoing = true;
         const winner = null;
         const playerOneTurn = true;
@@ -213,11 +318,41 @@ class KafatzBoard extends React.Component {
             [0,0,0,0,0,0],
             [1,1,0,0,1,1],
             [1,1,0,0,1,1]
-        ]
+        ];
+        const cpu1 = newCpu1!==null?newCpu1:this.state.cpu1;
+        const inputCpu1 = cpu1;
+        const cpu2 = newCpu2!==null?newCpu2:this.state.cpu2;
+        const inputCpu2 = cpu2;
 
-        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retPiece, squares});
+        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retPiece, squares, cpu1, inputCpu1, cpu2, inputCpu2},this.detectCpuTurn);
     }
 
+    handleChangeCpu1(event) {
+        this.setState({inputCpu1: parseInt(event.target.value)});
+    }
+
+    displayCpu1() {
+        if (this.state.inputCpu1 === 0) {
+            return ' Human';
+        } else {
+            return ' CPU ' + this.state.inputCpu1;
+        }
+
+    }
+
+    handleChangeCpu2(event) {
+        this.setState({inputCpu2: parseInt(event.target.value)});
+    }
+    
+    displayCpu2() {
+        if (this.state.inputCpu2 === 0) {
+            return ' Human';
+        } else {
+            return ' CPU ' + this.state.inputCpu2;
+        }
+
+    }
+    
     renderSquare(rowNumber, colNumber) {
         const squid = rowNumber + ',' + colNumber;
         const value = this.state.squares[rowNumber][colNumber];
@@ -248,6 +383,44 @@ class KafatzBoard extends React.Component {
             </div>;
     }
 
+    renderControls() {
+        return <div className="kafatzSettingsPanel">
+            <p>Note: CPU code still in beta and not currently expected to make logical moves</p>
+            <label className="kafatzSettingInput">
+                Red:
+                {this.displayCpu1()}
+                <input
+                    className="kafatzInputSlider"
+                    type="range"
+                    value={this.state.inputCpu1}
+                    min="0"
+                    max="5"
+                    step="1"
+                    onChange = {this.handleChangeCpu1}
+                />
+            </label>
+            <label className="settingInput">
+                White:
+                {this.displayCpu2()}
+                <input
+                    className="kafatzInputSlider"
+                    type="range"
+                    value={this.state.inputCpu2}
+                    min="0"
+                    max="5"
+                    step="1"
+                    onChange = {this.handleChangeCpu2}
+                />
+            </label>
+            <button className="kafatzControlButton" onClick={() => this.resetGame(null, null)}>
+                Restart
+            </button>
+            <button className="kafatzControlButton" onClick={() => this.resetGame(this.state.inputCpu1, this.state.inputCpu2)}>
+                Save
+            </button>
+        </div>
+    }
+
     render() {
         let headerText;
         if (this.state.gameOngoing) {
@@ -271,7 +444,7 @@ class KafatzBoard extends React.Component {
             <div>
                 <h1>{headerText}</h1>
                 {this.renderBoard()}
-                <button className="kafatzControlButton" onClick={() => this.resetGame()}>Restart</button>
+                {this.renderControls()}
                 <div className="kafatzRulesBox">
                     <h2>Rules</h2>
                     <p>
@@ -301,6 +474,7 @@ class KafatzBoard extends React.Component {
         const board = document.getElementById('board');
         board.addEventListener('keyup', this.handleKeyUp);
         board.addEventListener('keydown', this.handleKeyDown);
+        this.detectCpuTurn();
     }
 
     componentWillUnmount() {
