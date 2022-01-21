@@ -178,19 +178,21 @@ class KafatzBoard extends React.Component {
     }
 
     cpuMove(steps, best) {
-        const result = this.minMaxBestMove(this.state.squares, steps, best);
-        this.movePiece(...result.move);
+        const result = this.minMaxBestMove(this.state.squares, steps, -Infinity, Infinity, best);
+        this.movePiece(...result.moveCoords);
     }
 
-    minMaxBestMove(squares, steps, best) {
-        const {oneCount, twoCount} = this.countPieces(this.state.squares);
-        if (steps === 0) {
-            return {value: this.heuristic(oneCount, twoCount)};
-        } else if (oneCount === 1) {
-            return {value: -1};
-        } else if (twoCount === 1) {
+    minMaxBestMove(squares, steps, alph, beta, best) {
+        const {oneCount, twoCount} = this.countPieces(squares);
+        if (oneCount === 1) {
             return {value: 1};
+        } else if (twoCount === 1) {
+            return {value: -1};
+        } else if (steps === 0) {
+            return {value: this.heuristic(oneCount, twoCount)};
         } else {
+            let value = best==='max'?-Infinity:Infinity;
+
             let currentTurnPiece = [];
             for (let i = 0; i<squares.length; i++) {
                 for (let j = 0; j<squares[i].length; j++) {
@@ -205,14 +207,34 @@ class KafatzBoard extends React.Component {
                 movesList.push(...movementOptions.map(toCoord => [fromCoord, toCoord]));
             });
             movesList = this.shuffleArray(movesList);
-            const childrenList = movesList.map(moveCoords => this.squaresChange(squares, moveCoords[0], moveCoords[1]));
-            const resultsList = childrenList.map(childSquares => this.minMaxBestMove(childSquares, steps-1, best==='max'?'min':'max'));
+
+            let resultsList = [];
+            for(let moveCoords of movesList) {
+                const newSquares = this.squaresChange(squares, moveCoords[0], moveCoords[1]);
+                const curResult = this.minMaxBestMove(newSquares, steps-1, alph, beta, best==='max'?'min':'max');
+                if (!curResult) {
+                    continue;
+                }
+                const curValue = curResult.value;
+                if (best==='max') {
+                    value = Math.max(value, curValue);
+                    if (value >= beta) {
+                        break;
+                    }
+                    alph = Math.max(alph, value);
+                } else {
+                    value = Math.min(value, curValue);
+                    if (value <= alph) {
+                        break
+                    }
+                    beta = Math.min(beta, value);
+                }
+                resultsList.push({moveCoords, value});
+            }
 
             const valueList = resultsList.map(element => element?element.value:null);
             const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
-
-            const bestIndex = valueList.findIndex(value => value === bestValue);
-            return {move: movesList[bestIndex], value: bestValue};
+            return resultsList.find(result => result.value === bestValue);
         }
     }
 
@@ -385,7 +407,7 @@ class KafatzBoard extends React.Component {
 
     renderControls() {
         return <div className="kafatzSettingsPanel">
-            <p>Note: CPU code still in beta and not currently expected to make logical moves</p>
+            <p>Note: CPU code still in development and may not make logical moves</p>
             <label className="kafatzSettingInput">
                 Red:
                 {this.displayCpu1()}
