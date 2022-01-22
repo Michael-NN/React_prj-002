@@ -24,6 +24,8 @@ class KafatzBoard extends React.Component {
         const cpu2 = 0;
         const inputCpu2 = 0;
         
+        const timeoutId = null;
+
         this.state = {
             gameOngoing,
             winner,
@@ -36,11 +38,11 @@ class KafatzBoard extends React.Component {
             inputCpu1,
             cpu2,
             inputCpu2,
+            timeoutId,
         }
 
         this.handleClick = this.handleClick.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
-        this.handleBoardClick = this.handleBoardClick.bind(this);
         this.handleBoardFocus = this.handleBoardFocus.bind(this);
         this.handleBoardUnfocus = this.handleBoardUnfocus.bind(this);
         this.handleChangeCpu1 = this.handleChangeCpu1.bind(this);
@@ -112,23 +114,20 @@ class KafatzBoard extends React.Component {
         }
     }
 
-    //this is a crude solution at best
-    handleBoardClick() {
-        this.setState({retPiece: null});
-    }
-
-    handleBoardFocus() {
-        if (this.state.retPiece === null) {
-            let retPiece = null;
-            if (this.state.selectedPiece) {
-                retPiece = this.state.selectedPiece;
-            } else {
-                const target = this.state.playerOneTurn?1:2;
-                const retRow = this.state.squares.findIndex(row => row.includes(target));
-                const retCol = this.state.squares[retRow].indexOf(target);                
-                retPiece = [retRow, retCol];
+    handleBoardFocus(event) {
+        if (event.target.getAttribute('class') === 'kafatzBoard') {
+            if (this.state.retPiece === null) {
+                let retPiece = null;
+                if (this.state.selectedPiece) {
+                    retPiece = this.state.selectedPiece;
+                } else {
+                    const target = this.state.playerOneTurn?1:2;
+                    const retRow = this.state.squares.findIndex(row => row.includes(target));
+                    const retCol = this.state.squares[retRow].indexOf(target);                
+                    retPiece = [retRow, retCol];
+                }
+                this.setState({retPiece});
             }
-            this.setState({retPiece});
         }
     }
 
@@ -317,16 +316,20 @@ class KafatzBoard extends React.Component {
             const playerOneTurn = this.state.playerOneTurn;
             if (playerOneTurn===true && this.state.cpu1!==0) {
 //                this.cpuMove(this.state.cpu1, 'max');
-                setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
+                const timeoutId = setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
+                this.setState({timeoutId});
             }
             if (playerOneTurn===false && this.state.cpu2!==0) {
 //                this.cpuMove(this.state.cpu2, 'min');
-                setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
+                const timeoutId = setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
+                this.setState({timeoutId});
             }
         }
     }
 
     resetGame(newCpu1, newCpu2) {
+        clearTimeout(this.state.timeoutId);
+        const timeoutId = null;
         const gameOngoing = true;
         const winner = null;
         const playerOneTurn = true;
@@ -346,7 +349,7 @@ class KafatzBoard extends React.Component {
         const cpu2 = newCpu2!==null?newCpu2:this.state.cpu2;
         const inputCpu2 = cpu2;
 
-        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retPiece, squares, cpu1, inputCpu1, cpu2, inputCpu2},this.detectCpuTurn);
+        this.setState({gameOngoing, winner, playerOneTurn, selectedPiece, legalIds, retPiece, squares, cpu1, inputCpu1, cpu2, inputCpu2, timeoutId},this.detectCpuTurn);
     }
 
     handleChangeCpu1(event) {
@@ -400,7 +403,7 @@ class KafatzBoard extends React.Component {
     }
 
     renderBoard() {
-        return <div className='kafatzBoard' id='board' tabIndex="0" onClick={this.handleBoardClick} onFocus={this.handleBoardFocus} onBlur={this.handleBoardUnfocus}>
+        return <div className='kafatzBoard' id='board' tabIndex="0" onFocus={this.handleBoardFocus} onBlur={this.handleBoardUnfocus}>
             {Array(6).fill(null).map((element, index) => this.renderRow(index, 6))}
             </div>;
     }

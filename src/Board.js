@@ -31,6 +31,7 @@ class Board extends React.Component {
         const cpu2 = defaults.cpu2;
         const squares = Array(rowCount).fill(null).map(() => new Array(colCount).fill(null));
         squares[curRow][curCol] = '1';
+        const timeoutId = null;
         this.state = {
             defaults,
             prune,
@@ -51,6 +52,7 @@ class Board extends React.Component {
             cpu1,
             cpu2,
             squares,
+            timeoutId,
         }
         this.handleKeyUp = this.handleKeyUp.bind(this);
         this.resetGame = this.resetGame.bind(this);
@@ -441,16 +443,20 @@ class Board extends React.Component {
             const playerOneTurn = this.state.playerOneTurn;
             if (playerOneTurn===true && this.state.cpu1!==0) {
 //                this.cpuMove(this.state.cpu1, 'max');
-                setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
+                const timeoutId =  setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
+                this.setState({timeoutId});
             }
             if (playerOneTurn===false && this.state.cpu2!==0) {
 //                this.cpuMove(this.state.cpu2, 'min');
-                setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
+                const timeoutId =  setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
+                this.setState({timeoutId});
             }
         }
     }
 
     resetGame(newBoardSize, newCpu1, newCpu2) {
+        clearTimeout(this.state.timeoutId);
+        const timeoutId = null;
         const gameOngoing = true;
         const playerOneTurn = true;
         const winner = null;
@@ -480,7 +486,7 @@ class Board extends React.Component {
         if (board) {
             board.focus();
         }
-        this.setState({defaults, gameOngoing, playerOneTurn, winner, boardSize, rowCount, colCount, startRow, startCol, curRow, curCol, retRow, retCol, cpu1, cpu2, squares},this.detectCpuTurn);
+        this.setState({defaults, gameOngoing, playerOneTurn, winner, boardSize, rowCount, colCount, startRow, startCol, curRow, curCol, retRow, retCol, cpu1, cpu2, squares, timeoutId},this.detectCpuTurn);
     }
 
     handleSettings(settings) {
