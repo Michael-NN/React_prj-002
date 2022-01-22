@@ -184,9 +184,9 @@ class KafatzBoard extends React.Component {
     minMaxBestMove(squares, steps, alph, beta, best) {
         const {oneCount, twoCount} = this.countPieces(squares);
         if (oneCount === 1) {
-            return {value: 1};
-        } else if (twoCount === 1) {
             return {value: -1};
+        } else if (twoCount === 1) {
+            return {value: 1};
         } else if (steps === 0) {
             return {value: this.heuristic(oneCount, twoCount)};
         } else {
