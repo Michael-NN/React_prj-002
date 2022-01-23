@@ -59,7 +59,7 @@ class KafatzBoard extends React.Component {
 
                 } else {
                     //select
-                    const legalIds = this.legalFor([row, col], true);
+                    const legalIds = this.legalFor([row, col], this.state.squares, true);
                     this.setState({selectedPiece: [row, col], legalIds});
                 }
             } else {//Not clicking own piece
@@ -135,22 +135,22 @@ class KafatzBoard extends React.Component {
         this.setState({retPiece: null});
     }
 
-    legalFor(fromCoord, asText) {
+    legalFor(fromCoord, squares, asText) {
         const [fromRow, fromCol] = fromCoord;
         let legalCoords = [];
         for (let i = Math.max(fromRow-2,0);i<=Math.min(fromRow+2,5);i++) {
             for (let j = Math.max(fromCol-2,0);j<=Math.min(fromCol+2,5);j++) {
-                if (this.spaceDistance(fromCoord,[i,j]) === 1 && this.state.squares[i][j] === 0) {
+                if (this.spaceDistance(fromCoord,[i,j]) === 1 && squares[i][j] === 0) {
                     if (asText) {
                         legalCoords.push(i+','+j);
                     } else {
                         legalCoords.push([i,j]);
                     }
             }
-                if (this.spaceDistance(fromCoord,[i,j]) === 2 && this.manhattanDistance(fromCoord,[i,j])%2 === 0 && this.state.squares[fromRow][fromCol] !== this.state.squares[i][j]) {
+                if (this.spaceDistance(fromCoord,[i,j]) === 2 && this.manhattanDistance(fromCoord,[i,j])%2 === 0 && squares[fromRow][fromCol] !== squares[i][j]) {
                     const betweenRow = (fromRow+i)/2;
                     const betweenCol = (fromCol+j)/2;
-                    if (this.state.squares[betweenRow][betweenCol] === this.state.squares[fromRow][fromCol]) {
+                    if (squares[betweenRow][betweenCol] === squares[fromRow][fromCol]) {
                         if (asText) {
                             legalCoords.push(i+','+j);
                         } else {
@@ -202,7 +202,7 @@ class KafatzBoard extends React.Component {
             }
             let movesList = [];
             currentTurnPiece.forEach(fromCoord => {
-                const movementOptions = this.legalFor(fromCoord, false);
+                const movementOptions = this.legalFor(fromCoord, squares, false);
                 movesList.push(...movementOptions.map(toCoord => [fromCoord, toCoord]));
             });
             movesList = this.shuffleArray(movesList);
@@ -218,13 +218,15 @@ class KafatzBoard extends React.Component {
                 if (best==='max') {
                     value = Math.max(value, curValue);
                     if (value >= beta) {
+                        resultsList.push({moveCoords, value});
                         break;
                     }
                     alph = Math.max(alph, value);
                 } else {
                     value = Math.min(value, curValue);
                     if (value <= alph) {
-                        break
+                        resultsList.push({moveCoords, value});
+                        break;
                     }
                     beta = Math.min(beta, value);
                 }
