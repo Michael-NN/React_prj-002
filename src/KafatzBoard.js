@@ -177,20 +177,20 @@ class KafatzBoard extends React.Component {
     }
 
     cpuMove(steps, best) {
-        const result = this.minMaxBestMove(this.state.squares, steps, -Infinity, Infinity, best);
+        const result = this.minMaxBestMove(this.state.squares, steps, [-Infinity-Infinity], [Infinity,Infinity], best);
         this.movePiece(...result.moveCoords);
     }
 
     minMaxBestMove(squares, steps, alph, beta, best) {
         const {oneCount, twoCount} = this.countPieces(squares);
         if (oneCount === 1) {
-            return {value: -1};
+            return {value: [-1,0]};
         } else if (twoCount === 1) {
-            return {value: 1};
+            return {value: [1,0]};
         } else if (steps === 0) {
-            return {value: this.heuristic(oneCount, twoCount)};
+            return {value: this.heuristic(squares)};
         } else {
-            let value = best==='max'?-Infinity:Infinity;
+            let value = best==='max'?[-Infinity-Infinity]:[Infinity,Infinity];
 
             let currentTurnPiece = [];
             for (let i = 0; i<squares.length; i++) {
@@ -216,26 +216,33 @@ class KafatzBoard extends React.Component {
                 }
                 const curValue = curResult.value;
                 if (best==='max') {
-                    value = Math.max(value, curValue);
+                    value = this.listMax(value, curValue);
                     if (value >= beta) {
-                        resultsList.push({moveCoords, value});
-                        break;
+                        return {moveCoords, value};
                     }
-                    alph = Math.max(alph, value);
+                    alph = this.listMax(alph, value);
                 } else {
-                    value = Math.min(value, curValue);
+                    value = this.listMin(value, curValue);
                     if (value <= alph) {
-                        resultsList.push({moveCoords, value});
-                        break;
+                        return {moveCoords, value};
                     }
-                    beta = Math.min(beta, value);
+                    beta = this.listMin(beta, value);
                 }
-                resultsList.push({moveCoords, value});
+                resultsList.push({moveCoords, value: curValue});
             }
 
+            return resultsList.reduce((bestSoFar, current) => {
+                if ((best==='max' && this.listCompare(bestSoFar.value,current.value)===1)||(best!=='max' && this.listCompare(bestSoFar.value,current.value)===-1)) {
+                    return bestSoFar;
+                } else {
+                    return current;
+                }
+            });
+            /*
             const valueList = resultsList.map(element => element?element.value:null);
             const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
             return resultsList.find(result => result.value === bestValue);
+            */
         }
     }
 
@@ -249,8 +256,66 @@ class KafatzBoard extends React.Component {
         return array;
     }
 
-    heuristic(oneCount, twoCount) {
-        return (oneCount-twoCount)/(Math.max(oneCount,twoCount)-1);
+    heuristic(squares) {
+        let positionScore = 0;
+        let oneCount = 0;
+        let twoCount = 0;
+        squares.forEach((row, r) => {
+            row.forEach((square, c) => {
+//                let positionValue = Math.min(r+1, 6-r, c+1, 6-c);
+                let positionValue = Math.min(r+1, 6-r) + Math.min(c+1, 6-c);
+                if (square === 1) {
+                    oneCount += 1;
+                    positionScore += positionValue;
+                }
+                if (square === 2) {
+                    twoCount += 1;
+                    positionScore -= positionValue;
+                }
+            });
+        });
+        return [
+            (oneCount-twoCount)/(Math.max(oneCount,twoCount)-1),
+            positionScore
+        ];
+    }
+
+    listCompare(a, b) {
+        if (a&&b) {
+            for (let i=0; i<Math.min(a.length,b.length);i++) {
+                if (a[i] > b[i]) {
+                    return 1;
+                }
+                if (a[i] < b[i]) {
+                    return -1
+                }
+            }
+            return 0;
+        } else {
+            if (a) {
+                return a;
+            } else if (b) {
+                return b;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    listMax(a, b) {
+        if (this.listCompare(a,b)===1) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    listMin(a, b) {
+        if (this.listCompare(a,b)===-1) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     movePiece(fromCoord, toCoord) {
@@ -472,7 +537,7 @@ class KafatzBoard extends React.Component {
                 <h1>{headerText}</h1>
                 {this.renderBoard()}
                 {this.renderControls()}
-                <div className="kafatzRulesBox">
+                <div className="kafatzRulesBox" tabIndex='0'>
                     <h2>Rules</h2>
                     <p>
                         Players take turns moving one of their own color pieces.

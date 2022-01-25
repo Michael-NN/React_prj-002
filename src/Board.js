@@ -523,7 +523,7 @@ class Board extends React.Component {
                     handleReset={this.resetGame}
                     handleSubmit={this.handleSettings}
                 />
-                <div className="rulesBox">
+                <div className="rulesBox" tabIndex='0'>
                     <h2>Rules</h2>
                     <p>
                         Players take turns moving the game token one space vertically, horizontally, or diagonally.

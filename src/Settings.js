@@ -49,12 +49,13 @@ class Settings extends React.Component {
     }
 
     displayCpu1() {
+        /*
         if (this.state.cpu1 === 0) {
             return ' Human';
         } else {
             return ' CPU ' + this.state.cpu1;
         }
-        /*
+        */
         switch (this.state.cpu1) {
             case 0:
                 return ' Human';
@@ -68,16 +69,17 @@ class Settings extends React.Component {
                 return ' Expert';
             default:
                 return '???';
-        }*/
+        }
     }
 
     displayCpu2() {
+        /*
         if (this.state.cpu2 === 0) {
             return ' Human';
         } else {
             return ' CPU ' + this.state.cpu2;
         }
-        /*
+        */
         switch (this.state.cpu2) {
             case 0:
                 return ' Human';
@@ -91,7 +93,7 @@ class Settings extends React.Component {
                 return ' Expert';
             default:
                 return '???';
-        }*/
+        }
     }
 
     render() {
@@ -118,8 +120,8 @@ class Settings extends React.Component {
                         type="range"
                         value={this.state.cpu1}
                         min="0"
-                        max="5"
-                        step="1"
+                        max="8"
+                        step="2"
                         onChange = {this.handleChangeCpu1}
                     />
                 </label>
@@ -131,8 +133,8 @@ class Settings extends React.Component {
                         type="range"
                         value={this.state.cpu2}
                         min="0"
-                        max="5"
-                        step="1"
+                        max="8"
+                        step="2"
                         onChange = {this.handleChangeCpu2}
                     />
                 </label>
