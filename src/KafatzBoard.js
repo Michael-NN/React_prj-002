@@ -177,25 +177,25 @@ class KafatzBoard extends React.Component {
     }
 
     cpuMove(steps, best) {
-        const result = this.minMaxBestMove(this.state.squares, steps, [-Infinity-Infinity], [Infinity,Infinity], best);
+        const result = this.minMaxBestMove(this.state.squares, steps, [-Infinity-Infinity], [Infinity,Infinity], best==='max');
         this.movePiece(...result.moveCoords);
     }
 
-    minMaxBestMove(squares, steps, alph, beta, best) {
+    minMaxBestMove(squares, steps, alph, beta, isMax) {
         const {oneCount, twoCount} = this.countPieces(squares);
         if (oneCount === 1) {
-            return {value: [-1,0]};
+            return {value: [-1,0,0]};
         } else if (twoCount === 1) {
-            return {value: [1,0]};
+            return {value: [1,0,0]};
         } else if (steps === 0) {
             return {value: this.heuristic(squares)};
         } else {
-            let value = best==='max'?[-Infinity-Infinity]:[Infinity,Infinity];
+            let value = isMax?[-Infinity-Infinity]:[Infinity,Infinity];
 
             let currentTurnPiece = [];
             for (let i = 0; i<squares.length; i++) {
                 for (let j = 0; j<squares[i].length; j++) {
-                    if (squares[i][j] === (best==='max'?1:2)) {
+                    if (squares[i][j] === (isMax?1:2)) {
                         currentTurnPiece.push([i,j]);
                     }
                 }
@@ -210,12 +210,19 @@ class KafatzBoard extends React.Component {
             let resultsList = [];
             for(let moveCoords of movesList) {
                 const newSquares = this.squaresChange(squares, moveCoords[0], moveCoords[1]);
-                const curResult = this.minMaxBestMove(newSquares, steps-1, alph, beta, best==='max'?'min':'max');
+                const curResult = this.minMaxBestMove(newSquares, steps-1, alph, beta, !isMax);
                 if (!curResult) {
                     continue;
                 }
-                const curValue = curResult.value;
-                if (best==='max') {
+                let curValue = curResult.value;
+                const turnsIndex = curValue.length-1;
+                let turnsCount = Math.abs(curValue[turnsIndex])+1;
+                if ((isMax && this.listSign(curValue, turnsIndex)>=0) || (!isMax && this.listSign(curValue, turnsIndex)<0)) {
+                    turnsCount *= -1;
+                }
+                curValue[turnsIndex] = turnsCount;
+
+                if (isMax) {
                     value = this.listMax(value, curValue);
                     if (value >= beta) {
                         return {moveCoords, value};
@@ -232,17 +239,12 @@ class KafatzBoard extends React.Component {
             }
 
             return resultsList.reduce((bestSoFar, current) => {
-                if ((best==='max' && this.listCompare(bestSoFar.value,current.value)===1)||(best!=='max' && this.listCompare(bestSoFar.value,current.value)===-1)) {
+                if ((isMax && this.listCompare(bestSoFar.value,current.value)===1)||(!isMax && this.listCompare(bestSoFar.value,current.value)===-1)) {
                     return bestSoFar;
                 } else {
                     return current;
                 }
             });
-            /*
-            const valueList = resultsList.map(element => element?element.value:null);
-            const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
-            return resultsList.find(result => result.value === bestValue);
-            */
         }
     }
 
@@ -262,7 +264,6 @@ class KafatzBoard extends React.Component {
         let twoCount = 0;
         squares.forEach((row, r) => {
             row.forEach((square, c) => {
-//                let positionValue = Math.min(r+1, 6-r, c+1, 6-c);
                 let positionValue = Math.min(r+1, 6-r) + Math.min(c+1, 6-c);
                 if (square === 1) {
                     oneCount += 1;
@@ -276,7 +277,8 @@ class KafatzBoard extends React.Component {
         });
         return [
             (oneCount-twoCount)/(Math.max(oneCount,twoCount)-1),
-            positionScore
+            positionScore,
+            0
         ];
     }
 
@@ -316,6 +318,17 @@ class KafatzBoard extends React.Component {
         } else {
             return b;
         }
+    }
+
+    listSign(a, cap) {
+        for (let i=0; i<Math.min(cap, a.length);i++) {
+            if (a[i] > 0) {
+                return 1;
+            } else if (a[i] < 0) {
+                return -1;
+            }
+        }
+        return 0;
     }
 
     movePiece(fromCoord, toCoord) {
