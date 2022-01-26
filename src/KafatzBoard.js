@@ -177,7 +177,7 @@ class KafatzBoard extends React.Component {
     }
 
     cpuMove(steps, best) {
-        const result = this.minMaxBestMove(this.state.squares, steps, [-Infinity-Infinity], [Infinity,Infinity], best==='max');
+        const result = this.minMaxBestMove(this.state.squares, steps, [-Infinity,-Infinity], [Infinity,Infinity], best==='max');
         this.movePiece(...result.moveCoords);
     }
 
@@ -190,7 +190,7 @@ class KafatzBoard extends React.Component {
         } else if (steps === 0) {
             return {value: this.heuristic(squares)};
         } else {
-            let value = isMax?[-Infinity-Infinity]:[Infinity,Infinity];
+            let value = isMax?[-Infinity,-Infinity]:[Infinity,Infinity];
 
             let currentTurnPiece = [];
             for (let i = 0; i<squares.length; i++) {
@@ -224,13 +224,13 @@ class KafatzBoard extends React.Component {
 
                 if (isMax) {
                     value = this.listMax(value, curValue);
-                    if (value >= beta) {
+                    if (this.listCompare(value, beta) >= 0 /*value >= beta*/) {
                         return {moveCoords, value};
                     }
                     alph = this.listMax(alph, value);
                 } else {
                     value = this.listMin(value, curValue);
-                    if (value <= alph) {
+                    if (this.listCompare(value, alph) <= 0 /*value <= alph*/) {
                         return {moveCoords, value};
                     }
                     beta = this.listMin(beta, value);
@@ -294,13 +294,7 @@ class KafatzBoard extends React.Component {
             }
             return 0;
         } else {
-            if (a) {
-                return a;
-            } else if (b) {
-                return b;
-            } else {
-                return null;
-            }
+            return null;
         }
     }
 
