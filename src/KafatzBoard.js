@@ -177,92 +177,59 @@ class KafatzBoard extends React.Component {
     }
 
     cpuMove(steps, best) {
-        const result = this.minMaxBestMove(this.state.squares, steps, [-Infinity,-Infinity], [Infinity,Infinity], best==='max');
-        this.movePiece(...result.moveCoords);
+        const result = this.minMaxBestMove({steps: 0, squares: this.state.squares, isMax: best==='max'}, steps, this.lowestResult(), this.highestResult());
+        this.movePiece(...result.move);
     }
 
-    minMaxBestMove(squares, steps, alph, beta, isMax) {
-        const {oneCount, twoCount} = this.countPieces(squares);
-        if (oneCount === 1) {
-            return {value: [-1,0,0]};
-        } else if (twoCount === 1) {
-            return {value: [1,0,0]};
-        } else if (steps === 0) {
-            return {value: this.heuristic(squares)};
+    minMaxBestMove(node, steps, alph, beta) {
+        if (steps === 0 || this.isEndState(node)) {
+            return this.heuristic(node);
         } else {
-            let value = isMax?[-Infinity,-Infinity]:[Infinity,Infinity];
-
-            let currentTurnPiece = [];
-            for (let i = 0; i<squares.length; i++) {
-                for (let j = 0; j<squares[i].length; j++) {
-                    if (squares[i][j] === (isMax?1:2)) {
-                        currentTurnPiece.push([i,j]);
-                    }
-                }
-            }
-            let movesList = [];
-            currentTurnPiece.forEach(fromCoord => {
-                const movementOptions = this.legalFor(fromCoord, squares, false);
-                movesList.push(...movementOptions.map(toCoord => [fromCoord, toCoord]));
-            });
-            movesList = this.shuffleArray(movesList);
-
+            let accResult = node.isMax?this.lowestResult():this.highestResult();
+            let childNodes = this.generateChildNodes(node);
             let resultsList = [];
-            for(let moveCoords of movesList) {
-                const newSquares = this.squaresChange(squares, moveCoords[0], moveCoords[1]);
-                const curResult = this.minMaxBestMove(newSquares, steps-1, alph, beta, !isMax);
-                if (!curResult) {
-                    continue;
-                }
-                let curValue = curResult.value;
-                const turnsIndex = curValue.length-1;
-                let turnsCount = Math.abs(curValue[turnsIndex])+1;
-                if ((isMax && this.listSign(curValue, turnsIndex)>=0) || (!isMax && this.listSign(curValue, turnsIndex)<0)) {
-                    turnsCount *= -1;
-                }
-                curValue[turnsIndex] = turnsCount;
-
-                if (isMax) {
-                    value = this.listMax(value, curValue);
-                    if (this.listCompare(value, beta) >= 0 /*value >= beta*/) {
-                        return {moveCoords, value};
+            for (let childNode of childNodes) {
+                let curResult = this.minMaxBestMove(childNode, steps-1, alph, beta);
+                if (node.isMax) {
+                    accResult = this.resultMax(accResult, curResult);
+                    if (this.resultCompare(curResult,beta) >= 0) {
+                        if (node.move) {
+                            curResult.move = node.move;
+                        }
+                        return curResult;
                     }
-                    alph = this.listMax(alph, value);
+                    alph = this.resultMax(alph, accResult);
                 } else {
-                    value = this.listMin(value, curValue);
-                    if (this.listCompare(value, alph) <= 0 /*value <= alph*/) {
-                        return {moveCoords, value};
+                    accResult = this.resultMin(accResult, curResult);
+                    if (this.resultCompare(curResult,alph) <= 0) {
+                        if (node.move) {
+                            curResult.move = node.move;
+                        }
+                        return curResult;
                     }
-                    beta = this.listMin(beta, value);
+                    beta = this.resultMin(beta, accResult);
                 }
-                resultsList.push({moveCoords, value: curValue});
+                if (node.move) {
+                    curResult.move = node.move;
+                }
+                resultsList.push(curResult);
             }
-
-            return resultsList.reduce((bestSoFar, current) => {
-                if ((isMax && this.listCompare(bestSoFar.value,current.value)===1)||(!isMax && this.listCompare(bestSoFar.value,current.value)===-1)) {
-                    return bestSoFar;
-                } else {
-                    return current;
-                }
-            });
+            return this.findBest(resultsList, node.isMax);
         }
     }
 
-    shuffleArray (array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
-        }
-        return array;
+    //Is passed a game node and returns true iff it represents a state where the game is over
+    isEndState(node) {
+        const {oneCount, twoCount} = this.countPieces(node.squares);
+        return oneCount === 1 || twoCount === 1;
     }
 
-    heuristic(squares) {
+    //Is passed a game node and returns a heuristic assessment of the state's favorability
+    heuristic(node) {
         let positionScore = 0;
         let oneCount = 0;
         let twoCount = 0;
-        squares.forEach((row, r) => {
+        node.squares.forEach((row, r) => {
             row.forEach((square, c) => {
                 let positionValue = Math.min(r+1, 6-r) + Math.min(c+1, 6-c);
                 if (square === 1) {
@@ -275,14 +242,91 @@ class KafatzBoard extends React.Component {
                 }
             });
         });
-        return [
-            (oneCount-twoCount)/(Math.max(oneCount,twoCount)-1),
-            positionScore,
-            0
-        ];
+        return {
+            steps: node.steps,
+            move: node.move,
+            value: [
+                (oneCount-twoCount)/(Math.max(oneCount,twoCount)-1),
+                positionScore,
+            ]
+        };
     }
 
-    listCompare(a, b) {
+    //returns the lowest possible heuristic value
+    lowestResult() {
+        return {value: [-Infinity,-Infinity]};
+    }
+
+    //returns the highest possible heuristic value
+    highestResult() {
+        return {value: [Infinity,Infinity]};
+    }
+
+    //Takes node representing a game state and returns list of nodes representing possible next game states
+    generateChildNodes(node) {
+        let currentTurnPiece = [];
+        for (let i = 0; i<node.squares.length; i++) {
+            for (let j = 0; j<node.squares[i].length; j++) {
+                if (node.squares[i][j] === (node.isMax?1:2)) {
+                    currentTurnPiece.push([i,j]);
+                }
+            }
+        }
+        let childNodes = [];
+        currentTurnPiece.forEach(fromCoord => {
+            const movementOptions = this.legalFor(fromCoord, node.squares, false);
+            childNodes.push(...movementOptions.map(toCoord => {
+                return {
+                    steps: node.steps+1,
+                    move: [fromCoord, toCoord],
+                    squares: this.squaresChange(node.squares, fromCoord, toCoord),
+                    isMax: !node.isMax,
+                };
+            }));
+        });
+        return this.shuffleArray(childNodes);
+    }
+
+    shuffleArray (array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
+    }
+
+    //Takes two nodes that represent minimax results and returns the more positive
+    resultMax(a, b) {
+        if (a&&b) {
+            if (this.resultCompare(a,b)===1) {
+                return a;
+            } else {
+                return b;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //Takes two nodes that represent minimax results and returns the more negative
+    resultMin(a, b) {
+        if (a&&b) {
+            if (this.resultCompare(a,b)===-1) {
+                return a;
+            } else {
+                return b;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //Takes two noes that represent minimax results and returns an integer the represents which of the two is more positive
+    resultCompare(resultA, resultB) {
+        const a = resultA.value;
+        const b = resultB.value;
         if (a&&b) {
             for (let i=0; i<Math.min(a.length,b.length);i++) {
                 if (a[i] > b[i]) {
@@ -298,24 +342,29 @@ class KafatzBoard extends React.Component {
         }
     }
 
-    listMax(a, b) {
-        if (this.listCompare(a,b)===1) {
-            return a;
-        } else {
-            return b;
-        }
+    //Takes a list of minimax results and returns the one that would be selected as the best move
+    findBest(resultsList, isMax) {
+        const exampleBest = resultsList.reduce((bestSoFar, current) => {
+            if ((isMax && this.resultCompare(bestSoFar,current)===1)||(!isMax && this.resultCompare(bestSoFar,current)===-1)) {
+                return bestSoFar;
+            } else {
+                return current;
+            }
+        });
+        const isStalling = (isMax && this.resultSign(exampleBest) > 0) || (!isMax && this.resultSign(exampleBest) < 0);
+        const leadingResults = resultsList.filter(result => this.resultCompare(result, exampleBest) === 0);
+        return leadingResults.reduce((bestSoFar, current) => {
+            if ((isStalling && bestSoFar.steps > current.steps) || (!isStalling && bestSoFar.steps < current.steps)) {
+                return bestSoFar;
+            } else {
+                return current;
+            }
+        });
     }
 
-    listMin(a, b) {
-        if (this.listCompare(a,b)===-1) {
-            return a;
-        } else {
-            return b;
-        }
-    }
-
-    listSign(a, cap) {
-        for (let i=0; i<Math.min(cap, a.length);i++) {
+    resultSign(resultA) {
+        const a = resultA.value;
+        for (let i=0; i<a.length; i++) {
             if (a[i] > 0) {
                 return 1;
             } else if (a[i] < 0) {
@@ -389,12 +438,10 @@ class KafatzBoard extends React.Component {
         if (this.state.gameOngoing) {
             const playerOneTurn = this.state.playerOneTurn;
             if (playerOneTurn===true && this.state.cpu1!==0) {
-//                this.cpuMove(this.state.cpu1, 'max');
                 const timeoutId = setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
                 this.setState({timeoutId});
             }
             if (playerOneTurn===false && this.state.cpu2!==0) {
-//                this.cpuMove(this.state.cpu2, 'min');
                 const timeoutId = setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
                 this.setState({timeoutId});
             }
@@ -484,7 +531,7 @@ class KafatzBoard extends React.Component {
 
     renderControls() {
         return <div className="kafatzSettingsPanel">
-            <p>Note: CPU code still in development and may not make logical moves</p>
+            <p>Note: CPU code still in development and may not always make logical moves</p>
             <label className="kafatzSettingInput">
                 Red:
                 {this.displayCpu1()}
@@ -520,6 +567,30 @@ class KafatzBoard extends React.Component {
         </div>
     }
 
+    renderRules() {
+        return <div className="kafatzRulesBox" tabIndex='0'>
+            <h2>Rules</h2>
+            <p>
+                Players take turns moving one of their own color pieces.
+            </p>
+            <p>
+                A piece can be moved one space horizontally, vertically, or diagonally.
+            </p>
+            <p>
+                If the piece you are moving is adjacent to another piece of your color, you may "jump" it over the neighboring piece, moving it two spaces in that direction.
+            </p>
+            <p>
+                You may only move one of your pieces into a space occupied by your opponent's piece when moving by way of a jump.
+            </p>
+            <p>
+                When this happens, the opponent's piece is removed from play.
+            </p>
+            <p>
+                The game ends when one player has eliminated all but one of their oppoent's pieces, thereby preventing them from performing jumps.
+            </p>
+        </div>
+    }
+
     render() {
         let headerText;
         if (this.state.gameOngoing) {
@@ -544,27 +615,7 @@ class KafatzBoard extends React.Component {
                 <h1>{headerText}</h1>
                 {this.renderBoard()}
                 {this.renderControls()}
-                <div className="kafatzRulesBox" tabIndex='0'>
-                    <h2>Rules</h2>
-                    <p>
-                        Players take turns moving one of their own color pieces.
-                    </p>
-                    <p>
-                        A piece can be moved one space horizontally, vertically, or diagonally.
-                    </p>
-                    <p>
-                        If the piece you are moving is adjacent to another piece of your color, you may "jump" it over the neighboring piece, moving it two spaces in that direction.
-                    </p>
-                    <p>
-                        You may only move one of your pieces into a space occupied by your opponent's piece when moving by way of a jump.
-                    </p>
-                    <p>
-                        When this happens, the opponent's piece is removed from play.
-                    </p>
-                    <p>
-                        The game ends when one player has eliminated all but one of their oppoent's pieces, thereby preventing them from performing jumps.
-                    </p>
-                </div>
+                {this.renderRules()}
             </div>
         )
     }
