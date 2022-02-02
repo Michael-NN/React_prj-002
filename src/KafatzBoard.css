@@ -4,6 +4,8 @@
     max-height: 100vw;
     max-width: 100vw;
     margin: auto;
+    background-color: #484848;
+    border-radius: 1%;
 }
 
 .kafatzRow {
@@ -29,13 +31,15 @@
     padding: 1%;
     margin: 1%;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    background-color: hsl(180, 42%, 68%);
+    color: #E7DFDD;
+    background-color: #5F236B;
+    border-radius: 5%;
     border: none;
     outline: none;
 }
 
 .kafatzControlButton:hover, .kafatzControlButton:focus {
-    background-color: aqua;
+    background-color: #BE375F;
 }
 
 .kafatzRulesBox {

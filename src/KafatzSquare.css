@@ -5,11 +5,12 @@
 }
 
 .kafatzButton {
-    background-color: black;
+    background-color: #212121;
     height: 100%;
     width: 100%;
     text-align: center;
-    border: solid 3px rgb(64, 64, 64);
+    border: solid 3px #484848;
+    border-radius: 5%;
     box-sizing: border-box;
 }
 
@@ -22,24 +23,30 @@
 }
 
 .playerOnePiece {
-    background-color: red;
+    background-color: #d50000;
+    border: 5px solid #9b0000;
 }
 
 .playerTwoPiece {
-    background-color: white;
+    background-color: #fafafa;
+    border: 5px solid #c7c7c7;
+}
+
+.selected.gamePiece {
+    border: 5px solid #00e5ff;
 }
 
 .selected {
-    border: 3px solid cyan;
+    border: 3.5px solid #00e5ff;
     box-sizing: border-box;
 }
 
 .threatened {
-    border: 3px solid red;
+    border: 3.5px solid #c4001d;
     box-sizing: border-box;
 }
 
 .kafatzRet {
-    border: 3px solid lightgreen;
+    border: 3.5px solid #76ff03;
     box-sizing: border-box;
 }

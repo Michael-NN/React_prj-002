@@ -1,5 +1,5 @@
 .button {
-    background: cyan;
+    background: #6ec6ff;
     font-size: 24px;
     font-weight: bold;
     line-height: 10px;
@@ -8,7 +8,11 @@
     border-radius: 10%;
     padding: 0;
     text-align: center;
-    border: 5px solid blue;
+    border: 5px solid #0069c0;
+  }
+
+  .button.red, .button.yellow {
+    border-radius: 15%;
   }
 
   .gamePiece {
@@ -40,15 +44,15 @@
   }
 
 .red {
-  background: red;
+  background: #ba000d;
 }
 
 .yellow {
-  background: yellow;
+  background: #fff350;
 }
 
 .fallen {
-  background: blue;
+  background: #0069c0;
 }
 
 /*
