@@ -12,7 +12,6 @@ class Board extends React.Component {
             cpu1: 0,
             cpu2: 0,
         }
-        const prune = false;
         const gameOngoing = true;
         const playerOneTurn = true;
         const hasLegalMove = true;
@@ -34,7 +33,6 @@ class Board extends React.Component {
         const timeoutId = null;
         this.state = {
             defaults,
-            prune,
             gameOngoing,
             playerOneTurn,
             hasLegalMove,
@@ -154,163 +152,90 @@ class Board extends React.Component {
     }
 
     handleClick(rowNumber, colNumber) {
-        const valid = this.validateMove(rowNumber, colNumber);
-        if (valid) {
-            this.setCurrent(rowNumber, colNumber);
+        if (this.state.gameOngoing && ((this.state.playerOneTurn && this.state.cpu1 === 0) || (!this.state.playerOneTurn && this.state.cpu2 === 0))) {
+            if (this.getLegalMoves({squares: this.state.squares, row: this.state.curRow, col: this.state.curCol}, true).includes(rowNumber+','+colNumber)) {
+                this.movePiece([rowNumber, colNumber]);
+            }
         }
     }
 
-    validateMove(rowNumber, colNumber) {
-        if (!this.state.gameOngoing) {
-            return false;
-        }
-        if ((this.state.playerOneTurn && this.state.cpu1!==0) || (!this.state.playerOneTurn && this.state.cpu2!==0)) {
-            return false;
-        }
-        if (rowNumber === this.state.curRow && colNumber === this.state.curCol) {
-            return false;
-        }
-        if (rowNumber < 0 || rowNumber >= this.state.rowCount) {
-            return false;
-        }
-        if (colNumber < 0 || colNumber >= this.state.colCount) {
-            return false;
-        }
-        if (this.state.squares[rowNumber][colNumber] === 'X') {
-            return false;
-        }
-        if (!(Math.abs(rowNumber - this.state.curRow) <= 1) || !(Math.abs(colNumber - this.state.curCol) <= 1)) {
-            return false;
-        }
-        return true;
-    }
-
-    setCurrent(rowNumber, colNumber) {
+    movePiece(toCoords) {
+        const rowNumber = toCoords[0];
+        const colNumber = toCoords[1];
         const curRow = rowNumber;
         const curCol = colNumber;
         const retRow = rowNumber;
         const retCol = colNumber;
-		const squares = this.state.squares.slice();
-        let hasLegalMove = false;
-        for (let i = 0; i<squares.length; i++) {
-            for (let j = 0; j<squares[i].length; j++) {
-                if (squares[i][j] === '1' || squares[i][j] === '2') {
-                   squares[i][j] = 'X';
-                }
-                if ((Math.abs(i - rowNumber) <= 1) && (Math.abs(j - colNumber) <= 1) && !(i===rowNumber && j===colNumber) && (squares[i][j] !== 'X')) {
-                    hasLegalMove = true;
-                }
-            }
-        }
+        const squares = this.mutateSquares(this.state.squares, toCoords, this.state.playerOneTurn)
         const playerOneTurn = !this.state.playerOneTurn;
-        squares[rowNumber][colNumber] = (playerOneTurn)?'1':'2';
-		this.setState({playerOneTurn, hasLegalMove, curRow, curCol, retRow, retCol, squares},this.detectEndState);
+		this.setState({playerOneTurn, curRow, curCol, retRow, retCol, squares},this.detectEndState);
     }
 
     cpuMove(steps, best) {
-        let result;
-        result = this.minMaxBestMove(this.state.squares, this.state.curRow, this.state.curCol, steps, best);
-        switch (result.move) {
-            case 0:
-                this.setCurrent(this.state.curRow-1, this.state.curCol);
-                break;
-            case 1:
-                this.setCurrent(this.state.curRow-1, this.state.curCol+1);
-                break;
-            case 2:
-                this.setCurrent(this.state.curRow, this.state.curCol+1);
-                break;
-            case 3:
-                this.setCurrent(this.state.curRow+1, this.state.curCol+1);
-                break;
-            case 4:
-                this.setCurrent(this.state.curRow+1, this.state.curCol);
-                break;
-            case 5:
-                this.setCurrent(this.state.curRow+1, this.state.curCol-1);
-                break;
-            case 6:
-                this.setCurrent(this.state.curRow, this.state.curCol-1);
-                break;
-            case 7:
-                this.setCurrent(this.state.curRow-1, this.state.curCol-1);
-                break;
-            default:
+        const result = this.minMaxBestMove({steps: 0, squares: this.state.squares, row: this.state.curRow, col: this.state.curCol, isMax: best==='max'}, steps, this.lowestResult(), this.highestResult());
+        this.movePiece(result.move);
+    }
+
+    minMaxBestMove(node, steps, alph, beta) {
+        if (steps === 0 || this.isEndState(node)) {
+            return this.heuristic(node);
+        } else {
+            let accResult = node.isMax?this.lowestResult():this.highestResult();
+            let childNodes = this.generateChildNodes(node);
+            let resultsList = [];
+            for (let childNode of childNodes) {
+                let curResult = this.minMaxBestMove(childNode, steps-1, alph, beta);
+                if (node.move) {
+                    curResult.move = node.move;
+                }
+                if (node.isMax) {
+                    accResult = this.resultMax(accResult, curResult);
+                    if (this.resultCompare(curResult,beta) > 0) {
+                        return accResult;
+                    }
+                    alph = this.resultMax(alph, accResult);
+                } else {
+                    accResult = this.resultMin(accResult, curResult);
+                    if (this.resultCompare(curResult,alph) < 0) {
+                        return accResult;
+                    }
+                    beta = this.resultMin(beta, accResult);
+                }
+                resultsList.push(curResult);
+            }
+            return this.findBest(resultsList, node.isMax);
         }
     }
 
-    minMaxBestMove(squares, row, col, steps, best) {
-        if (steps===0) {
-            return {value: this.heuristic(row, col), turns: 0};
-        } else if ((row === 0 && col === 0) || (row === this.state.rowCount-1 && col === this.state.colCount-1)) {
-            return {value: 1, turns: 0};
-        } else if ((row === this.state.rowCount-1 && col === 0) || (row === 0 && col === this.state.colCount-1)) {
-            return {value: -1, turns: 0};
+    //Is passed a game node and returns true iff it represents a state where the game is over
+    isEndState(node) {
+        return this.assessPosition(node) !== null;
+    }
+
+    assessPosition(node) {
+        const curRow = node.row;
+        const curCol = node.col;
+        const hasLegalMove = this.getLegalMoves(node, true).length > 0;
+        if (curRow === 0 && curCol === 0) {
+            return 1;
+        } else if (curRow === this.state.rowCount-1 && curCol === this.state.colCount-1) {
+            return 1;
+        } else if (curRow === this.state.rowCount-1 && curCol === 0) {
+            return 2;
+        } else if (curRow === 0 && curCol === this.state.colCount-1) {
+            return 2;
+        } else if (!hasLegalMove) {
+            return 0;
         } else {
-            let moves = new Array(8).fill(null);
-            for (let i = 0; i < 8; i++) {
-                let {mutRow, mutCol} = this.mutateIndices(row, col, i);
-                let valid = mutRow >= 0 && mutRow < this.state.rowCount && mutCol >= 0 && mutCol < this.state.colCount && squares[mutRow][mutCol] !== 'X';
-                if(valid) {
-                    let mutSquares = this.mutateSquares(squares, mutRow, mutCol, best);
-                    moves[i] = this.minMaxBestMove(mutSquares, mutRow, mutCol, steps-1, best==='max'?'min':'max')
-                }
-            }
-            if (moves.every(element => element === null)) {
-                return {value: 0, turns: 0}
-            }
-            const valueList = moves.map(element => element?element.value:null);
-            const bestValue = best==='max'?Math.max(...valueList.filter(element => element!==null)):Math.min(...valueList.filter(element => element!==null));
-
-            const leadMoves = moves.map(element => (element!==null && element.value===bestValue)?element:null);
-            const turnsList = leadMoves.map(element => element?element.turns:null);
-            const bestTurns = ((best==='max'&&bestValue<=0)||(best==='min'&&bestValue>=0))?Math.max(...turnsList.filter(element => element!==null)):Math.min(...turnsList.filter(element => element!==null));
-
-            let bestMoves = []
-            moves.forEach((element, index) => {
-                if (element !== null && element.value === bestValue && element.turns === bestTurns) {
-                    bestMoves.push(index);
-                }
-            })
-            const bestMove = bestMoves[Math.floor(Math.random()*bestMoves.length)];
-            return {move: bestMove, value: bestValue, turns: bestTurns+1};
+            return null;
         }
     }
 
-    /*
-    minMaxBestMove(move, squares, row, col, steps, best) {
-        if (steps===0) {
-            return {move, value: this.heuristic(row, col), turns: 0};
-        } else if ((row === 0 && col === 0) || (row === this.state.rowCount-1 && col === this.state.colCount-1)) {
-            return {move, value: 1, turns: 0};
-        } else if ((row === this.state.rowCount-1 && col === 0) || (row === 0 && col === this.state.colCount-1)) {
-            return {move, value: -1, turns: 0};
-        } else {
-            const nodes = this.getLegalMoves(squares, row, col);
-            if (nodes.length === 0) {
-                return {move, value: 0, turns: 0}
-            } else {
-                console.log(nodes);
-                const moves = nodes.map(node => this.minMaxBestMove(node.move, node.squares, node.row, node.col, steps-1, best==='max'?'min':'max'));
-                console.log(moves);
-                const valueList = moves.map(result => result.value);
-                console.log(valueList);
-                const bestValue = best==='max'?Math.max(...valueList):Math.min(...valueList);
-                console.log(bestValue);
-                const leadMoves = moves.filter(move => move.value === bestValue);
-                console.log(leadMoves);
-                const turnsList = leadMoves.map(move => move.turns);
-                console.log(turnsList);
-                const bestTurns = (best==='max'&&bestValue>=0)||(best==='min'&&bestValue<=0)?Math.max(...turnsList):Math.min(...turnsList);
-                console.log(bestTurns);
-                const bestMove = leadMoves.find(move => move.turns === bestTurns);
-                return {move: move?move:bestMove.move, value: bestValue, turns: bestTurns};
-            }
-        }
+    //Is passed a game node and returns a heuristic assessment of the state's favorability
+    heuristic(node) {
+        const row = node.row;
+        const col = node.col;
 
-    }*/
-
-    heuristic(row, col) {
         const cenRow = this.state.startRow;
         const cenCol = this.state.startCol;
         const rowFromCenter = Math.abs(cenRow - row);
@@ -318,26 +243,39 @@ class Board extends React.Component {
         const radius = Math.min(rowFromCenter, colFromCenter);
         const stepSize = 1/Math.floor(this.state.boardSize/2);
         const sign = ((row <= cenRow && col <= cenCol) || (row > cenRow && col > cenCol))?1:-1;
-        return sign*radius*stepSize;
+        return {
+            steps: node.steps,
+            move: node.move,
+            value: sign*radius*stepSize,
+        };
     }
 
-    getLegalMoves(squares, row, col) {
-        let legalMoves = [];
-        for (let i = 0; i < 8; i++) {
-            let {mutRow, mutCol} = this.mutateIndices(row, col, i);
-            let valid = mutRow >= 0 && mutRow < this.state.rowCount && mutCol >= 0 && mutCol < this.state.colCount && squares[mutRow][mutCol] !== 'X';
-            if (valid) {
-                let mutSquares = this.mutateSquares(squares, mutRow, mutCol);
-                legalMoves.push({
-                    move: i,
-                    squares: mutSquares,
-                    row: mutRow,
-                    col: mutCol,
-                });
-            }
-        }
-        legalMoves = this.shuffleArray(legalMoves);
-        return legalMoves;
+    //returns the lowest possible heuristic value
+    lowestResult() {
+        return {value: -Infinity};
+    }
+
+    //returns the highest possible heuristic value
+    highestResult() {
+        return {value: Infinity};
+    }
+
+    //Takes node representing a game state and returns list of nodes representing possible next game states
+    generateChildNodes(node) {
+        const legalMoves = this.getLegalMoves(node, false);
+        let childNodes = [];
+        legalMoves.forEach(move => {
+            childNodes.push({
+                steps: node.steps+1,
+                move: move,
+                squares: this.mutateSquares(node.squares, move, node.isMax),
+                row: move[0],
+                col: move[1],
+                isMax: !node.isMax,
+            })
+        });
+        return this.shuffleArray(childNodes);
+        return childNodes;
     }
 
     shuffleArray (array) {
@@ -348,6 +286,22 @@ class Board extends React.Component {
             array[j] = temp;
         }
         return array;
+    }
+
+    getLegalMoves(node, asText) {
+        let legalMoves = [];
+        for (let i = 0; i < 8; i++) {
+            let {mutRow, mutCol} = this.mutateIndices(node.row, node.col, i);
+            let valid = mutRow >= 0 && mutRow < this.state.rowCount && mutCol >= 0 && mutCol < this.state.colCount && node.squares[mutRow][mutCol] !== 'X';
+            if (valid) {
+                if (asText) {
+                    legalMoves.push(mutRow+','+mutCol);
+                } else {
+                    legalMoves.push([mutRow, mutCol]);
+                }
+            }
+        }
+        return legalMoves;
     }
 
     mutateIndices(row, col, direction) {
@@ -387,7 +341,9 @@ class Board extends React.Component {
         return {mutRow, mutCol};
     }
 
-    mutateSquares(squares, mutRow, mutCol, best) {
+    mutateSquares(squares, mutCoords, playerOneMove) {
+        const mutRow = mutCoords[0];
+        const mutCol = mutCoords[1];
         const mutSquares = this.cloneArray(squares);
         for (let i = 0; i<mutSquares.length; i++) {
             for (let j = 0; j<mutSquares[i].length; j++) {
@@ -396,7 +352,7 @@ class Board extends React.Component {
                 }
             }
         }
-        mutSquares[mutRow][mutCol] = best==='max'?'2':'1';
+        mutSquares[mutRow][mutCol] = playerOneMove?'2':'1';
         return mutSquares;
     }
 
@@ -410,22 +366,73 @@ class Board extends React.Component {
         return result;
     }
 
+    //Takes two nodes that represent minimax results and returns the more positive
+    resultMax(a, b) {
+        if (a&&b) {
+            if (this.resultCompare(a,b)===1) {
+                return a;
+            } else {
+                return b;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //Takes two nodes that represent minimax results and returns the more negative
+    resultMin(a, b) {
+        if (a&&b) {
+            if (this.resultCompare(a,b)===-1) {
+                return a;
+            } else {
+                return b;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //Takes two nodes that represent minimax results and returns an integer the represents which of the two is more positive
+    resultCompare(resultA, resultB) {
+        if(resultA&&resultB) {
+            const a = resultA.value;
+            const b = resultB.value;
+            if (a===b) {
+                return 0;
+            }  else if (a>b) {
+                return 1;
+            } else if (a<b) {
+                return -1;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //Takes a list of minimax results and returns the one that would be selected as the best move
+    findBest(resultsList, isMax) {
+        const exampleBest = resultsList.reduce((bestSoFar, current) => {
+            if ((isMax && this.resultCompare(bestSoFar,current)===1)||(!isMax && this.resultCompare(bestSoFar,current)===-1)) {
+                return bestSoFar;
+            } else {
+                return current;
+            }
+        });
+        const isStalling = (isMax && exampleBest.value < 0) || (!isMax && exampleBest.value > 0);
+        const leadingResults = resultsList.filter(result => this.resultCompare(result, exampleBest) === 0);
+        return leadingResults.reduce((bestSoFar, current) => {
+            if ((isStalling && bestSoFar.steps > current.steps) || (!isStalling && bestSoFar.steps < current.steps)) {
+                return bestSoFar;
+            } else {
+                return current;
+            }
+        });
+    }
+
     detectEndState() {
-        const curRow = this.state.curRow;
-        const curCol = this.state.curCol;
-        const hasLegalMove = this.state.hasLegalMove;
-        if (curRow === 0 && curCol === 0) {
-            this.declareWinner(1);
-        } else if (curRow === this.state.rowCount-1 && curCol === this.state.colCount-1) {
-            this.declareWinner(1);
-            
-        } else if (curRow === this.state.rowCount-1 && curCol === 0) {
-            this.declareWinner(2);
-            
-        } else if (curRow === 0 && curCol === this.state.colCount-1) {
-            this.declareWinner(2);
-        } else if (!hasLegalMove) {
-            this.declareWinner(0);
+        const assessment = this.assessPosition({squares: this.state.squares, row: this.state.curRow, col: this.state.curCol});
+        if (assessment !== null) {
+            this.declareWinner(assessment);
         } else {
             this.detectCpuTurn();
         }
@@ -442,12 +449,10 @@ class Board extends React.Component {
         if (this.state.gameOngoing) {
             const playerOneTurn = this.state.playerOneTurn;
             if (playerOneTurn===true && this.state.cpu1!==0) {
-//                this.cpuMove(this.state.cpu1, 'max');
                 const timeoutId =  setTimeout(() => {this.cpuMove(this.state.cpu1, 'max');}, 1000);
                 this.setState({timeoutId});
             }
             if (playerOneTurn===false && this.state.cpu2!==0) {
-//                this.cpuMove(this.state.cpu2, 'min');
                 const timeoutId =  setTimeout(() => {this.cpuMove(this.state.cpu2, 'min');}, 1000);
                 this.setState({timeoutId});
             }

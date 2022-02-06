@@ -190,27 +190,21 @@ class KafatzBoard extends React.Component {
             let resultsList = [];
             for (let childNode of childNodes) {
                 let curResult = this.minMaxBestMove(childNode, steps-1, alph, beta);
+                if (node.move) {
+                    curResult.move = node.move;
+                }
                 if (node.isMax) {
                     accResult = this.resultMax(accResult, curResult);
-                    if (this.resultCompare(curResult,beta) >= 0) {
-                        if (node.move) {
-                            curResult.move = node.move;
-                        }
-                        return curResult;
+                    if (this.resultCompare(curResult,beta) > 0) {
+                        return accResult;
                     }
                     alph = this.resultMax(alph, accResult);
                 } else {
                     accResult = this.resultMin(accResult, curResult);
-                    if (this.resultCompare(curResult,alph) <= 0) {
-                        if (node.move) {
-                            curResult.move = node.move;
-                        }
-                        return curResult;
+                    if (this.resultCompare(curResult,alph) < 0) {
+                        return accResult;
                     }
                     beta = this.resultMin(beta, accResult);
-                }
-                if (node.move) {
-                    curResult.move = node.move;
                 }
                 resultsList.push(curResult);
             }
@@ -323,7 +317,7 @@ class KafatzBoard extends React.Component {
         }
     }
 
-    //Takes two noes that represent minimax results and returns an integer the represents which of the two is more positive
+    //Takes two nodes that represent minimax results and returns an integer the represents which of the two is more positive
     resultCompare(resultA, resultB) {
         const a = resultA.value;
         const b = resultB.value;
@@ -351,7 +345,7 @@ class KafatzBoard extends React.Component {
                 return current;
             }
         });
-        const isStalling = (isMax && this.resultSign(exampleBest) > 0) || (!isMax && this.resultSign(exampleBest) < 0);
+        const isStalling = (isMax && this.resultSign(exampleBest) < 0) || (!isMax && this.resultSign(exampleBest) > 0);
         const leadingResults = resultsList.filter(result => this.resultCompare(result, exampleBest) === 0);
         return leadingResults.reduce((bestSoFar, current) => {
             if ((isStalling && bestSoFar.steps > current.steps) || (!isStalling && bestSoFar.steps < current.steps)) {
