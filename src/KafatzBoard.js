@@ -525,7 +525,6 @@ class KafatzBoard extends React.Component {
 
     renderControls() {
         return <div className="kafatzSettingsPanel">
-            <p>Note: CPU code still in development and may not always make logical moves</p>
             <label className="kafatzSettingInput">
                 Red:
                 {this.displayCpu1()}

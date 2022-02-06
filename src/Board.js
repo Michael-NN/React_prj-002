@@ -275,7 +275,6 @@ class Board extends React.Component {
             })
         });
         return this.shuffleArray(childNodes);
-        return childNodes;
     }
 
     shuffleArray (array) {
