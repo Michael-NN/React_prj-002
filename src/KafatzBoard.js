@@ -345,7 +345,9 @@ class KafatzBoard extends React.Component {
                 return current;
             }
         });
-        const isStalling = (isMax && this.resultSign(exampleBest) < 0) || (!isMax && this.resultSign(exampleBest) > 0);
+        const velocity = this.resultCompare(exampleBest, this.heuristic({squares: this.state.squares}));
+        const isStalling = (isMax && velocity < 0) || (!isMax && velocity > 0);
+//        const isStalling = (isMax && this.resultSign(exampleBest) < 0) || (!isMax && this.resultSign(exampleBest) > 0);
         const leadingResults = resultsList.filter(result => this.resultCompare(result, exampleBest) === 0);
         return leadingResults.reduce((bestSoFar, current) => {
             if ((isStalling && bestSoFar.steps > current.steps) || (!isStalling && bestSoFar.steps < current.steps)) {
@@ -564,16 +566,13 @@ class KafatzBoard extends React.Component {
         return <div className="kafatzRulesBox" tabIndex='0'>
             <h2>Rules</h2>
             <p>
-                Players take turns moving one of their own color pieces.
-            </p>
-            <p>
-                A piece can be moved one space horizontally, vertically, or diagonally.
+                Players take turns moving one of their own color pieces.  A piece can be moved one space horizontally, vertically, or diagonally to a vacant space.
             </p>
             <p>
                 If the piece you are moving is adjacent to another piece of your color, you may "jump" it over the neighboring piece, moving it two spaces in that direction.
             </p>
             <p>
-                You may only move one of your pieces into a space occupied by your opponent's piece when moving by way of a jump.
+                In order to move one of your pieces into a space occupied by your opponent's piece, you must be moving by way of a jump.
             </p>
             <p>
                 When this happens, the opponent's piece is removed from play.

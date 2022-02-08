@@ -417,7 +417,9 @@ class Board extends React.Component {
                 return current;
             }
         });
-        const isStalling = (isMax && exampleBest.value < 0) || (!isMax && exampleBest.value > 0);
+        const velocity = this.resultCompare(exampleBest, this.heuristic({row: this.state.curRow, col: this.state.curCol}));
+        const isStalling = (isMax && velocity < 0) || (!isMax && velocity > 0);
+//        const isStalling = (isMax && exampleBest.value < 0) || (!isMax && exampleBest.value > 0);
         const leadingResults = resultsList.filter(result => this.resultCompare(result, exampleBest) === 0);
         return leadingResults.reduce((bestSoFar, current) => {
             if ((isStalling && bestSoFar.steps > current.steps) || (!isStalling && bestSoFar.steps < current.steps)) {
