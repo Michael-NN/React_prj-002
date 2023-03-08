@@ -3,7 +3,7 @@ import React from 'react';
 import './App.css';
 import Board from './FallingTiles/Board';
 import KafatzBoard from './Kafatz/KafatzBoard';
-import TaeBase from './Tae/TaeBase';
+//import TaeBase from './Tae/TaeBase';
 
 class App extends React.Component {
   constructor(props) {
