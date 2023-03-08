@@ -4,8 +4,8 @@
 }
 
 header {
-  color: #E7DFDD;
-  background-color: #0E0B16;
+  color: #FAF9F6;
+  background-color: #00001f;
   vertical-align: middle;
   height: 75px;
   margin: 1% 0px;
@@ -15,6 +15,20 @@ header {
   float: left;
   height: 75px;
   width: 75px;
+}
+
+.menuButton {
+  color: #FAF9F6;
+  background-color: #683473;
+  border-radius: 8px;
+  border: 0px;
+  padding: 10px 100px;
+  margin: 20px;
+  font-size: 30px;
+}
+
+.menuButton:hover, .menuButton:focus {
+  background-color: #92639C;
 }
 
 /*

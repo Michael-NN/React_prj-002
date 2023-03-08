@@ -1,0 +1,30 @@
+.tae-system {
+    position: absolute;
+    box-sizing: border-box;
+    background-color: gray;
+    border-radius: 3vw;
+    left: 10vw;
+    right: 10vw;
+    height: 40vw;
+}
+
+.tae-screen {
+    position: absolute;
+    box-sizing: border-box;    
+    background-color: #f5f5f5;
+    border-radius: 1vw;
+    padding: 7%;
+    top: 5%;
+    bottom: 25%;
+    left: 7%;
+    right: 7%;
+}
+
+.tae-inputBar {
+    position: absolute;
+    box-sizing: border-box;
+    top: 75%;
+    bottom: 5%;
+    left: 7%;
+    right: 7%;
+}

@@ -17,13 +17,13 @@
     padding: 1%;
     margin: 1%;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color: #E7DFDD;
-    background-color: #5F236B;
+    color: #FAF9F6;
+    background-color: #683473;
     border-radius: 5%;
     border: none;
     outline: none;
 }
 
 .controlButton:hover, .controlButton:focus {
-    background-color: #BE375F;
+    background-color: #92639C;
 }

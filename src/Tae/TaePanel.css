@@ -1,0 +1,18 @@
+.tae-input {
+    display: inline-block;
+    height: 100%;
+    width: 30%;
+}
+
+.tae-optionPanel {
+    margin: auto;
+    width: 75%;
+}
+
+.tae-optionButton {
+    display: block;
+    box-sizing: border-box;    
+    border: 1px solid black;
+    outline: none;
+    width: 100%
+}

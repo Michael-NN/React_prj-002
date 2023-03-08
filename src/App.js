@@ -1,41 +1,56 @@
 //import logo from './logo.svg';
 import React from 'react';
 import './App.css';
-import Home from './Home';
-import Board from './Board';
-import KafatzBoard from './KafatzBoard';
+import Board from './FallingTiles/Board';
+import KafatzBoard from './Kafatz/KafatzBoard';
+import TaeBase from './Tae/TaeBase';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    document.body.style = 'background: #E7DFDD;';
-    const page = 'home';
+    document.body.style = 'background: #dedad1;';
+    const params = this.getUrlParams();
+    let page = 'home';
+    if (params.get('page')) {page = params.get('page');}
+    const directory = [
+      {label: 'Falling Tiles', name: 'fallingTiles', component: <Board/>},
+      {label: 'Kafatz', name: 'kafatz', component: <KafatzBoard/>},
+//      {label: 'Text Adventure System', name: 'tae', component: <TaeBase/>},
+    ];
     this.state = {
-      page
+      page,
+      directory
     }
 
     this.setPage = this.setPage.bind(this);
+  }
+
+  getUrlParams() {
+    const urlString = window.location.href;
+    const url = new URL(urlString);
+    return url.searchParams;
   }
 
   setPage(page) {
     this.setState({page});
   }
 
+  renderHome() {
+    const menu = this.state.directory.map(element => (
+      <div>
+        <button className="menuButton" onClick={() => this.setPage(element.name)}>{element.label}</button>
+      </div>
+    ));
+    return (
+      <div>
+        {menu}
+      </div>
+    );
+  }
+
   render() {
-    let content;
-    switch (this.state.page) {
-      case 'fallingTiles':
-        content = <Board/>;
-        break;
-        case 'kafatz':
-          content = <KafatzBoard/>;
-          break;
-        default:
-        content = <Home
-          setPage = {this.setPage}
-        />;
-        break;
-    }
+    const findComp = this.state.directory.find(element => element.name === this.state.page);
+    const content = findComp ? findComp.component : this.renderHome();
     return (
       <div className="App">
         <span>Donate to my <a href="https://ko-fi.com/maonekochat" target="_blank" rel="noreferrer">Ko-fi page!</a></span>
@@ -48,17 +63,5 @@ class App extends React.Component {
     );
   }
 }
-
-/*
-function App() {
-  return (
-    <div className="App">
-      <span>Donate to my <a href="https://ko-fi.com/maonekochat" target="_blank" rel="noreferrer">Ko-fi page!</a></span>
-      <Board 
-      />
-    </div>
-  );
-}
-*/
 
 export default App;
