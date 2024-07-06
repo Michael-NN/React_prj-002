@@ -1,21 +1,30 @@
-//import logo from './logo.svg';
 import React from 'react';
 import './App.css';
+import fullLogo from './branding/Mechalopod - Full logo.png'
+import logoIcon from './branding/Mechalopod - Icon.png'
 import Board from './FallingTiles/Board';
 import KafatzBoard from './Kafatz/KafatzBoard';
-//import TaeBase from './Tae/TaeBase';
+import Tae from './Tae/TaeBase';
+import WordGenerator from './WordGenerator/WordGeneratorBase';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    document.body.style = 'background: #dedad1;';
     const params = this.getUrlParams();
-    let page = 'home';
-    if (params.get('page')) {page = params.get('page');}
+    let page = params.get('page') ?? 'home';
+    /*
+      {sectionLabel: 'Video Games', items: [
+        {label: 'Text Adventure System', name: 'tae', component: <Tae/>},
+      ]},
+    */
     const directory = [
-      {label: 'Falling Tiles', name: 'fallingTiles', component: <Board/>},
-      {label: 'Kafatz', name: 'kafatz', component: <KafatzBoard/>},
-//      {label: 'Text Adventure System', name: 'tae', component: <TaeBase/>},
+      {sectionLabel: 'Board Games', items: [
+        {label: 'Falling Tiles', name: 'fallingTiles', component: <Board/>},
+        {label: 'Kafatz', name: 'kafatz', component: <KafatzBoard/>},
+      ]},
+      {sectionLabel: 'Creativity Toys', items: [
+        {label: 'Word Generator', name: 'wordGen', component: <WordGenerator/>},
+      ]},
     ];
     this.state = {
       page,
@@ -33,32 +42,67 @@ class App extends React.Component {
 
   setPage(page) {
     this.setState({page});
+    window.scrollTo({top:0});
   }
 
-  renderHome() {
-    const menu = this.state.directory.map(element => (
-      <div>
-        <button className="menuButton" onClick={() => this.setPage(element.name)}>{element.label}</button>
+  renderHeaderHome() {
+    return (
+        <img className="fullLogo" src={fullLogo} alt="Mechalopod Game Studios"/>
+      );
+  }
+
+  renderHeaderNotHome() {
+    return (
+      <button className='logoButton' onClick={() => this.setPage('home')}>
+        <img className='logoButton-image' src={logoIcon}/>
+      </button>
+    );
+  }
+
+  renderHomeMenu() {
+    const menu = this.state.directory.map((element, index) => (
+      <div key={index} className= "menuSection">
+        <h2 className="menuSection-header">{element.sectionLabel}</h2>
+        {this.renderSection(element.items)}
       </div>
     ));
     return (
-      <div>
+      <div className='home-menu'>
         {menu}
       </div>
     );
   }
 
+  renderSection (items) {
+    const menu = items.map((element, index) => (
+      <div key={index}>
+        <button className="menuButton" onClick={() => this.setPage(element.name)}>{element.label}</button>
+      </div>
+    ));
+    return (
+      <div className='menuSection-body'>
+        {menu}
+      </div>
+    )
+  }
+
   render() {
-    const findComp = this.state.directory.find(element => element.name === this.state.page);
-    const content = findComp ? findComp.component : this.renderHome();
+    const flatDirectory = this.state.directory.map(element => element.items).flat();
+    const findComp = flatDirectory.find(element => element.name === this.state.page);
+    const header = findComp?.component ? this.renderHeaderNotHome() : this.renderHeaderHome()
+    const content = findComp?.component ?? this.renderHomeMenu();
+    //<span>Contact: <a href='mail to: mechalopod@gmail.com'>mechalopod@gmail.com</a></span>
     return (
       <div className="App">
-        <span>Donate to my <a href="https://ko-fi.com/maonekochat" target="_blank" rel="noreferrer">Ko-fi page!</a></span>
-        <header>
-          <button className="logo" onClick={() => this.setPage('home')}>Home</button>
-          <h1>Maonekochat Games</h1>
+        <header className='siteHeader'>
+          {header}
         </header>
-        {content}
+        <div className='siteBody'>
+          {content}
+        </div>
+        <footer className='siteFooter'>
+          <span>Logo by: <a href='https://www.eoschu.com/'>Eos Chu</a></span>
+        </footer>
       </div>
     );
   }

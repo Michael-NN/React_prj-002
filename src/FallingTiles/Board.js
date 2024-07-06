@@ -520,7 +520,7 @@ class Board extends React.Component {
         }
         return (
             <div>
-                <h1>{headerText}</h1>
+                <h1 className='ft-header'>{headerText}</h1>
                 {this.renderBoard(this.state.rowCount,this.state.colCount)}
                 <Settings
                     boardSize={this.state.boardSize}

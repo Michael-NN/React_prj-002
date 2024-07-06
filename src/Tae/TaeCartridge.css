@@ -1,0 +1,90 @@
+.select-reticle {
+    position: absolute;
+    top: -12%;
+    left: 0%;
+    height: 110%;
+    width: 100%;
+    border-radius: 10px;
+    z-index: 1;
+}
+
+.tae-cartridge:hover > .select-reticle,
+.tae-cartridge:focus > .select-reticle,
+.current-game > .select-reticle {
+    border: solid black 4px;
+}
+
+.current-game > .select-reticle {
+    border: solid red 4px;
+}
+
+.tae-cartridge {
+    position: absolute;
+    background-color: aqua;
+    top: 10%;
+    width: 100%;
+    aspect-ratio: 10/9;
+    border-radius: 8px 8px 0px 0px;
+    border: 0px;
+    box-shadow: 5px 5px 10px;
+    transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.tae-cartridge:hover, .tae-cartridge:focus {
+    transform: translateY(3px);
+    box-shadow: 5px 2px 10px;
+    outline: none;
+}
+
+.current-game {
+    transform: translateY(-5px);
+    box-shadow: 5px 10px 15px;
+}
+
+.tae-cartridge:active {
+    transform: translateY(5px);
+    box-shadow: 5px 0px 10px;
+}
+
+.tae-cartridge-tab {
+    position: absolute;
+    background-color: aqua;
+    text-align: center;
+    text-shadow: 1px 1px 5px black;
+    font-size: 1vw;
+    width: 90%;
+    height: 10.25%;
+    top: -10%;
+    border-radius: 8px 8px 0px 0px;
+}
+
+.tae-cartridge-tab > span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 90%;
+    width: 90%;
+    transform: translate(-50%, -40%);
+    padding: 1px;
+    border-radius: 15px;
+    box-shadow: inset 1px 1px 2px black;
+}
+
+.tae-cartridge-sticker {
+    position: absolute;
+    box-shadow: 1px 1px 2px black;
+    font-size: xx-large;
+    border-radius: 10%;
+    --sticker-buffer: 8%;
+    top: var(--sticker-buffer);
+    bottom: var(--sticker-buffer);
+    left: var(--sticker-buffer);
+    right: var(--sticker-buffer);
+}
+
+.tae-cartridge-sticker > span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

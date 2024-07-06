@@ -1,0 +1,82 @@
+.wordGen-categoryRow {
+    position: relative;
+    border: solid black;
+    margin: 5%;
+    background-color: lightgray;
+    border-radius: 3px;
+    min-height: 100px;
+}
+
+.wordGen-rowBody {
+    position: absolute;
+    width: calc(100% - 100px);
+    height: 100%;
+}
+
+.wordGen-categorySelect {
+    font-size: larger;
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    width: 20%;
+}
+
+.wordGen-sillySpacer {
+    height: 25%;
+    background-color: silver;
+}
+
+.wordGen-randRow {
+    position: relative;
+    top: -15px;
+    display: block;
+    margin: auto;
+}
+
+.wordGen-displayCellsContainer {
+    display: inline;
+    max-width: 75px;
+}
+
+.wordGen-displayCell {
+    border: solid black;
+    font-size: x-large;
+    vertical-align: middle;
+    height: 40px;
+    min-width: 80px;
+    transition: box-shadow 200ms;
+}
+
+.wordGen-lockedCell {
+    box-shadow: inset 0px 0px 10px red;
+}
+
+.wordGen-displayCell:hover, .wordGen-displayCell:focus {
+    box-shadow: inset 0px 0px 5px red;
+}
+
+.wordGen-rowButton {
+    border: none;
+    font-size: larger;
+}
+
+
+.wordGen-categoryDelete {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 100px;
+    width:100px;
+    background-color: rgba(0,0,0,0);
+    --delete-border-thick: 0px;
+    border: solid black var(--delete-border-thick);
+    border-left: solid black calc(1px + var(--delete-border-thick));
+    font-size: xx-large;
+    color: black;
+    transition: background-color 250ms;
+}
+
+.wordGen-categoryDelete:hover, .wordGen-categoryDelete:focus {
+    background-color: #D11A2A;
+}
+

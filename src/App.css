@@ -1,69 +1,114 @@
+:root {
+  --dark: #83411D;
+  --light: #FFFFFF;
+
+  --main: #E65525;
+  --alt: #231F20;
+  --text-default: var(--light);
+  --light-blue: #5FCCF7;
+  --dark-blue: #0C1445;
+  --shadow-default: var(--dark);
+  --gradient: linear-gradient(var(--light-blue), var(--dark-blue));
+  --header: 300px;
+  --footer: 100px;
+}
+
+html {
+  overflow-y: scroll;
+}
+
 .App {
   text-align: center;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-header {
-  color: #FAF9F6;
-  background-color: #00001f;
-  vertical-align: middle;
-  height: 75px;
-  margin: 1% 0px;
+.fullLogo {
+  height: var(--header);
 }
 
-.logo {
-  float: left;
-  height: 75px;
-  width: 75px;
+.logoButton {
+  position: absolute;
+  left: 0px;
+  background-color: transparent;
+  border: none;
+}
+
+.logoButton-image {
+  height: 150px;
+}
+
+.siteHeader {
+  position: relative;
+  background-color: var(--light-blue);
+  color: var(--text-default);
+  font-size: xx-large;
+  min-height: 100px;
+  padding: 15px;
+}
+
+.siteBody {
+  padding: 5%;
+  min-height: calc(100vh - (var(--header) + var(--footer)));
+  background-image: var(--gradient);
+}
+
+.menuSection {
+  margin-bottom: 5%;
+}
+
+.menuSection-header {
+  font-size: xx-large;
+  color: var(--text-default);
+  margin: 0px;
+}
+
+.menuSection-body {
+  margin: 1%;
 }
 
 .menuButton {
-  color: #FAF9F6;
-  background-color: #683473;
-  border-radius: 8px;
+  color: var(--text-default);
+  background-color: var(--main);
+  border-radius: 20px;
   border: 0px;
-  padding: 10px 100px;
-  margin: 20px;
-  font-size: 30px;
+  box-shadow: 1px 2px var(--shadow-default);
+  padding: 1% 7%;
+  margin: 1%;
+  font-size: x-large;
+  transition: all 200ms;
 }
 
 .menuButton:hover, .menuButton:focus {
-  background-color: #92639C;
+  filter: brightness(1.5);
 }
 
-/*
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.siteFooter {
+  font-size: large;
+  padding: 5%;
+  background-color: var(--dark-blue);
+  height: var(--footer);
+  color: var(--text-default);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.siteFooter > span {
+  margin-bottom: 1%;
+  display: block;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.siteFooter > span > a:link {
+  color: var(--text-default);
 }
 
-.App-link {
-  color: #61dafb;
+.siteFooter > span > a:visited {
+  color: var(--text-default);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.siteFooter > span > a:hover,
+.siteFooter > span > a:focus {
+  color: var(--alt);
 }
-*/
+
+.siteFooter > span > a:active {
+  color: var(--alt);
+  filter: brightness(1.75);
+}

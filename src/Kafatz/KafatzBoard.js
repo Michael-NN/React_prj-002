@@ -540,7 +540,7 @@ class KafatzBoard extends React.Component {
                     onChange = {this.handleChangeCpu1}
                 />
             </label>
-            <label className="settingInput">
+            <label className="kafatzSettingInput">
                 White:
                 {this.displayCpu2()}
                 <input
@@ -604,7 +604,7 @@ class KafatzBoard extends React.Component {
         }
         return (
             <div>
-                <h1>{headerText}</h1>
+                <h1 class='kf-header'>{headerText}</h1>
                 {this.renderBoard()}
                 {this.renderControls()}
                 {this.renderRules()}

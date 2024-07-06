@@ -1,18 +1,32 @@
 .tae-input {
     display: inline-block;
-    height: 100%;
+    box-sizing: border-box; 
+    font-size: x-large;
+    height: 90%;
     width: 30%;
+    padding-top: 2%;
+    border-radius: 2%;
+    border: solid black;
+    margin: 1.5%;
+    overflow-y: hidden;
+    box-shadow: 5px 5px 10px;
 }
 
 .tae-optionPanel {
     margin: auto;
+    margin-top: 5%;
     width: 75%;
+    overflow-y: auto;
+    max-height: 82%;
+}
+
+.tae-optionPanel::-webkit-scrollbar {
+    width: 0px;
 }
 
 .tae-optionButton {
     display: block;
-    box-sizing: border-box;    
-    border: 1px solid black;
-    outline: none;
-    width: 100%
+    margin: 5% 0px;
+    width: 100%;
 }
+

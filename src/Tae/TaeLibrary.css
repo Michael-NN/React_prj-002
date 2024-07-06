@@ -1,0 +1,30 @@
+.tae-library {
+    background-color: gray;
+    border-radius: 1vw;
+    text-align: left;
+    width: 65vw;
+    margin: auto;
+    margin-top: 5%;
+    padding: 1%;
+}
+
+.tae-library-search {
+    font-size: large;
+    margin: 1%;
+}
+
+.tae-library-shelf {
+    background-color: bisque;
+    box-shadow: inset 3px 3px 20px;
+    padding: 5%;
+    margin: 1%;
+    border-radius: 1vw;
+}
+
+.tae-library-game {
+    position: relative;
+    display: inline-block;
+    aspect-ratio: 1/1;
+    width: 28%;
+    margin: 2%;
+}

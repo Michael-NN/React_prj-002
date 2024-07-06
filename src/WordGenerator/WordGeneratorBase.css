@@ -1,0 +1,28 @@
+.wordGen-base {
+    padding: 5%;
+}
+
+.wordGen-button {
+    border: none;
+    border-radius: 3px;
+    margin: 5% 3%;
+}
+
+.wordGen-add {
+    height: 75px;
+    aspect-ratio: 1/1;
+    font-size: xx-large;
+}
+
+.wordGen-randomizeAll {
+    height: 50px;
+    font-size: large;
+}
+
+.wordGen-rowContainer {
+    min-height: 100px;
+    padding: 2%;
+    background-color: bisque;
+    border-radius: 5px;
+    box-shadow: inset 1px 1px 25px rgba(0, 0, 0, 0.5);
+}

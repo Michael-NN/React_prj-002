@@ -8,6 +8,11 @@
     border-radius: 1%;
 }
 
+h1.kf-header {
+    color: var(--text-default);
+    margin-top: 0px;
+}
+
 .kafatzRow {
     height: 16.66%;
 }
@@ -17,6 +22,7 @@
 }
 
 .kafatzSettingInput {
+    color: var(--text-default);
     display: block;
     margin: auto;
     width: 250px;
@@ -31,18 +37,19 @@
     padding: 1%;
     margin: 1%;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color: #FAF9F6;
-    background-color: #683473;
+    color: var(--text-default);
+    background-color: var(--main);
     border-radius: 5%;
     border: none;
     outline: none;
 }
 
 .kafatzControlButton:hover, .kafatzControlButton:focus {
-    background-color: #92639C;
+    background-color: var(--main-sub);
 }
 
 .kafatzRulesBox {
+    color: var(--text-default);
     width: 600px;
     max-width: 100vw;
     margin: auto;

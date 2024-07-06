@@ -3,6 +3,7 @@
 }
 
 .settingInput {
+    color: var(--text-default);
     display: block;
     margin: auto;
     width: 250px;
@@ -17,13 +18,13 @@
     padding: 1%;
     margin: 1%;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color: #FAF9F6;
-    background-color: #683473;
+    color: var(--text-default);
+    background-color: var(--main);
     border-radius: 5%;
     border: none;
     outline: none;
 }
 
 .controlButton:hover, .controlButton:focus {
-    background-color: #92639C;
+    background-color: var(--main-sub);
 }
