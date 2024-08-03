@@ -4,7 +4,7 @@ import fullLogo from './branding/Mechalopod - Full logo.png'
 import logoIcon from './branding/Mechalopod - Icon.png'
 import Board from './FallingTiles/Board';
 import KafatzBoard from './Kafatz/KafatzBoard';
-import Tae from './Tae/TaeBase';
+//import Tae from './Tae/TaeBase';
 import WordGenerator from './WordGenerator/WordGeneratorBase';
 
 class App extends React.Component {
@@ -54,7 +54,7 @@ class App extends React.Component {
   renderHeaderNotHome() {
     return (
       <button className='logoButton' onClick={() => this.setPage('home')}>
-        <img className='logoButton-image' src={logoIcon}/>
+        <img className='logoButton-image' src={logoIcon} alt="Mechalopod Game Studios"/>
       </button>
     );
   }
