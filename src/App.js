@@ -4,7 +4,7 @@ import fullLogo from './branding/Mechalopod - Full logo.png'
 import logoIcon from './branding/Mechalopod - Icon.png'
 import Board from './FallingTiles/Board';
 import KafatzBoard from './Kafatz/KafatzBoard';
-//import Tae from './Tae/TaeBase';
+import Tae from './Tae/TaeBase';
 import WordGenerator from './WordGenerator/WordGeneratorBase';
 
 class App extends React.Component {
@@ -21,6 +21,9 @@ class App extends React.Component {
       {sectionLabel: 'Board Games', items: [
         {label: 'Falling Tiles', name: 'fallingTiles', component: <Board/>},
         {label: 'Kafatz', name: 'kafatz', component: <KafatzBoard/>},
+      ]},
+      {sectionLabel: 'Video Games', items: [
+        {label: 'Text Adventure System', name: 'tae', component: <Tae/>},
       ]},
       {sectionLabel: 'Creativity Toys', items: [
         {label: 'Word Generator', name: 'wordGen', component: <WordGenerator/>},
